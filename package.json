@@ -1,5 +1,5 @@
 {
-  "name": "my-turborepo",
+  "name": "vrc-closet",
   "private": true,
   "scripts": {
     "build": "turbo run build",
