@@ -3,10 +3,10 @@ import { db, Item, items } from '@repo/db';
 import { TEMP_USER_ID } from '../const';
 import { eq } from 'drizzle-orm';
 
-const app = new Hono();
+const app = new Hono()
 
 // POST /items 
-app.post('/', async (c) => {
+.post('/', async (c) => {
   try {
     const body = await c.req.json();
     if (!body.name) return c.json({ error: 'Name is required' }, 400);
@@ -22,12 +22,12 @@ app.post('/', async (c) => {
     console.error(e);
     return c.json({ error: 'Failed to create item' }, 500);
   }
-});
+})
 
 //PUT /items/:id
-app.put('/:id', async (c) => {
+.put('/:id', async (c) => {
   try {
-    const id = Number(c.req.param('id'));
+    const id = c.req.param('id');
     const body = await c.req.json();
     if (!body.name) return c.json({ error: 'Name is required' }, 400);
 
@@ -50,10 +50,10 @@ app.put('/:id', async (c) => {
     console.error(e);
     return c.json({ error: 'Failed to update item' }, 500);
   }
-});
+})
 
 // GET /items
-app.get('/', async (c) => {
+.get('/', async (c) => {
   try {
     const allItems = await db.select().from(items).orderBy(items.id);
     return c.json<Item[]>(allItems);
@@ -61,12 +61,12 @@ app.get('/', async (c) => {
     console.error(e);
     return c.json({ error: 'Failed to fetch items' }, 500);
   }
-});
+})
 
 // GET /items/:id
-app.get('/:id', async (c) => {
+.get('/:id', async (c) => {
   try {
-    const id = Number(c.req.param('id'));
+    const id = c.req.param('id');
     const item = await db.select().from(items).where(eq(items.id, id)).limit(1);
     if (item.length === 0) {
       return c.json({ error: 'Item not found' }, 404);
@@ -76,12 +76,12 @@ app.get('/:id', async (c) => {
     console.error(e);
     return c.json({ error: 'Failed to fetch item' }, 500);
   }
-});
+})
 
 // DELETE /items/:id
-app.delete('/:id', async (c) => {
+.delete('/:id', async (c) => {
   try {
-    const id = Number(c.req.param('id'));
+    const id = c.req.param('id');
     const deletedCount = await db.delete(items).where(eq(items.id, id)).returning().then(res => res.length);
 
     if (deletedCount === 0) {
@@ -93,6 +93,6 @@ app.delete('/:id', async (c) => {
     console.error(e);
     return c.json({ error: 'Failed to delete item' }, 500);
   }
-});
+})
 
 export default app;

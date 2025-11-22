@@ -4,9 +4,10 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
-    "generate": "drizzle-kit generate",
-    "push": "drizzle-kit push",
-    "studio": "drizzle-kit studio"
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push:pg",
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "tsx src/seed.ts" 
   },
   "dependencies": {
     "drizzle-orm": "^0.30.0",

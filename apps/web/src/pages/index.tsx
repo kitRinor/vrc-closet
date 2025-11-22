@@ -5,7 +5,7 @@ import { Link } from "react-router-dom"; // Next.jsのLinkとは違うので注�
 export default function HomePage() {
 
   const tmp = async () => {
-    const res = await api.user.$get();
+    const res = await api.matrix.$get();
   }
 
   return (

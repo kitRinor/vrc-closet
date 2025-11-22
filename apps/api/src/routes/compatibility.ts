@@ -3,10 +3,10 @@ import { db, compatibility } from '@repo/db';
 import { eq, and } from 'drizzle-orm';
 import { TEMP_USER_ID } from '../const';
 
-const app = new Hono();
+const app = new Hono()
 
 // POST /compatibility
-app.post('/', async (c) => {
+.post('/', async (c) => {
   try {
     const { avatarId, itemId, status } = await c.req.json();
 
@@ -46,13 +46,13 @@ app.post('/', async (c) => {
     console.error(e);
     return c.json({ error: 'Failed to update compatibility' }, 500);
   }
-});
+})
 
 // PUT /compatibility/:avatarId/:itemId
-app.put('/:avatarId/:itemId', async (c) => {
+.put('/:avatarId/:itemId', async (c) => {
   try {
-    const avatarId = Number(c.req.param('avatarId'));
-    const itemId = Number(c.req.param('itemId'));
+    const avatarId = c.req.param('avatarId');
+    const itemId = c.req.param('itemId');
     const { status } = await c.req.json();
 
     if (!status) {
@@ -77,6 +77,6 @@ app.put('/:avatarId/:itemId', async (c) => {
     console.error(e);
     return c.json({ error: 'Failed to update compatibility' }, 500);
   }
-});
+})
 
 export default app;

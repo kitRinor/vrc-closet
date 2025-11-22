@@ -3,10 +3,13 @@ import { db, avatars, Avatar } from '@repo/db';
 import { TEMP_USER_ID } from '../const';
 import { eq } from 'drizzle-orm';
 
-const app = new Hono();
+
+// must write as chain method to make collect type-completion at hono-rpc
+
+const app = new Hono()
 
 // POST /avatars
-app.post('/', async (c) => {
+.post('/', async (c) => {
   try {
     const body = await c.req.json();
     if (!body.name) return c.json({ error: 'Name is required' }, 400);
@@ -21,10 +24,10 @@ app.post('/', async (c) => {
     console.error(e);
     return c.json({ error: 'Failed to create avatar' }, 500);
   }
-});
+})
 
 // GET /avatars
-app.get('/', async (c) => {
+.get('/', async (c) => {
   try {
     const allAvatars = await db.select().from(avatars).orderBy(avatars.id);
     return c.json<Avatar[]>(allAvatars);
@@ -32,12 +35,12 @@ app.get('/', async (c) => {
     console.error(e);
     return c.json({ error: 'Failed to fetch avatars' }, 500);
   }
-});
+})
 
 // GET /avatars/:id
-app.get('/:id', async (c) => {
+.get('/:id', async (c) => {
   try {
-    const id = Number(c.req.param('id'));
+    const id = c.req.param('id');
     const avatar = await db.select().from(avatars).where(eq(avatars.id, id)).limit(1);
 
     if (avatar.length === 0) {
@@ -49,12 +52,12 @@ app.get('/:id', async (c) => {
     console.error(e);
     return c.json({ error: 'Failed to fetch avatar' }, 500);
   }
-});
+})
 
 // DELETE /avatars/:id
-app.delete('/:id', async (c) => {
+.delete('/:id', async (c) => {
   try {
-    const id = Number(c.req.param('id'));
+    const id = c.req.param('id');
     const deletedCount = await db.delete(avatars).where(eq(avatars.id, id)).returning().then(res => res.length);
 
     if (deletedCount === 0) {
@@ -66,6 +69,6 @@ app.delete('/:id', async (c) => {
     console.error(e);
     return c.json({ error: 'Failed to delete avatar' }, 500);
   }
-});
+})
 
 export default app;

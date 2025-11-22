@@ -1,0 +1,45 @@
+# プロジェクトID（変更しなくてOK）
+project_id = "vrc-closet"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+# ⚠️ DBのメジャーバージョン（現在のローカル環境に合わせてください。通常は15か16）
+major_version = 15
+
+[studio]
+# 管理画面 (http://localhost:54323)
+enabled = false
+port = 54323
+api_url = "http://127.0.0.1:54321"
+
+
+# ❌ 分析・ログ収集 (これがクラッシュの原因)
+[analytics]
+enabled = false
+
+# ❌ リアルタイム通信 (Websocket)
+[realtime]
+enabled = false
+
+# ❌ Edge Functions (Honoを使うので不要)
+[edge_runtime]
+enabled = false
+
+# ❌ 画像変換・リサイズ機能 (ストレージ自体は使えます)
+[storage.image_transformation]
+enabled = false
+
+# ❌ メール送信テストサーバー (Inbucket)
+# Authのメール確認リンクを見るのに便利ですが、
+# "Illegal instruction" が出る場合は false にしてみてください。
+# (通常は軽量なので true でも大丈夫です)
+[inbucket]
+enabled = true 
+port = 54324

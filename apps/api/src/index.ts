@@ -1,4 +1,5 @@
 import { serve } from '@hono/node-server';
+import { config } from 'dotenv';
 import { Hono } from 'hono';
 // import { OpenAPIHono } from '@hono/zod-openapi';
 import { cors } from 'hono/cors';
@@ -9,6 +10,8 @@ import avatarsRoute from './routes/avatars';
 import itemsRoute from './routes/items';
 import compatibilityRoute from './routes/compatibility';
 import outfitsRoute from './routes/outfits';
+
+config();
 
 const app = new Hono();
 
@@ -30,8 +33,8 @@ const routes = app
 
 export type AppType = typeof routes;
 
-const port = Number(process.env.API_PORT) || 3001;
-console.log(`Server is running on port ${port}`);
+const port = Number(process.env.API_PORT) || 8787;
+console.log(`Server is running on http://localhost:${port}`);
 
 serve({
   fetch: app.fetch,

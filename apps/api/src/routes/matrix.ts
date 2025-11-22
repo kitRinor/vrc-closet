@@ -3,10 +3,10 @@ import { db, avatars, items, compatibility, Avatar, Item, Compatibility } from '
 import { eq } from 'drizzle-orm';
 import { TEMP_USER_ID } from '../const';
 
-const app = new Hono();
+const app = new Hono()
 
 // GET /matrix
-app.get('/', async (c) => {
+.get('/', async (c) => {
   try {
     // Fetch data concurrently for better performance
     const [allAvatars, allItems, allCompatibilities] = await Promise.all([
@@ -28,6 +28,6 @@ app.get('/', async (c) => {
     console.error(e);
     return c.json({ error: 'Internal Server Error' }, 500);
   }
-});
+})
 
 export default app;
