@@ -5,9 +5,10 @@ import { baseQueryForGetList } from '@/lib/validator';
 import { generateCondition } from '@/lib/queryUtils/filter';
 import { generateSorting } from '@/lib/queryUtils/sort';
 import { TEMP_USER_ID } from '@/const';
-import { avatars } from '@/db/schema/avatars';
+import { Avatar, avatars } from '@/db/schema/avatars';
 import { AppEnv } from '@/type';
 import { Hono } from 'hono';
+
 
 const list = new Hono<AppEnv>()
   .get(

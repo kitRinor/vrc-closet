@@ -14,7 +14,7 @@ const paramValidator = zValidator('param', z.object({
 
 const del = new Hono<AppEnv>()
   .delete(
-    '/:id',
+    '/',
     paramValidator,
     async (c) => {
       try {

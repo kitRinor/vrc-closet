@@ -10,8 +10,8 @@ import del from './delete';
 const app = new Hono<AppEnv>()
   .route('/', list)
   .route('/', create)
-  .route('/', get)
-  .route('/', update)
-  .route('/', del);
+  .route('/:id', get)
+  .route('/:id', update)
+  .route('/:id', del);
 
 export default app;

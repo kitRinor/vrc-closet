@@ -19,7 +19,7 @@ const jsonValidator = zValidator('json', z.object({
 
 const update = new Hono<AppEnv>()
   .put(
-    '/:id',
+    '/',
     paramValidator,
     jsonValidator,
     async (c) => {

@@ -57,12 +57,12 @@ export default function HomePage() {
 
   // 追加処理
   const handleAddAvatar = async (data: Partial<Avatar>) => {
-    await api.avatars.$post({ json: data });
+    const res = await api.avatars.$post({ json: data });
     setOpenNewAvatar(false);
     fetchAvatars(); 
   };
   const handleAddItem = async (data: Partial<Item>) => {
-    await api.items.$post({ json: data });
+    const res = await api.items.$post({ json: data });
     setOpenNewItem(false);
     fetchItems(); 
   };
