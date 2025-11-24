@@ -13,3 +13,6 @@ export const avatars = pgTable('avatars', {
 
 export type Avatar = typeof avatars.$inferSelect;
 export type NewAvatar = typeof avatars.$inferInsert;
+
+
+

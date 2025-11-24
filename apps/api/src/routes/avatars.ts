@@ -1,20 +1,35 @@
 import { Hono } from 'hono';
-import { db, avatars, Avatar } from '../db';
+import { db } from '../db';
 import { TEMP_USER_ID } from '../const';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { zValidator } from '@hono/zod-validator';
 import { baseQueryForGetList } from '../lib/validator';
 import { generateCondition } from '../lib/queryUtils/filter';
 import { generateSorting } from '../lib/queryUtils/sort';
-import { createInsertSchema } from 'drizzle-zod';
+import { Avatar, avatars } from '../db/schema/avatars';
+import z from 'zod';
 
 
 // must write as chain method to make collect type-completion at hono-rpc
 
+const paramValidator = zValidator('param', z.object({
+  id: z.uuid("ID must be a valid UUID"),
+}));
+const queryValidator = zValidator('query', baseQueryForGetList(avatars, {
+  sortKeys: ['id', 'createdAt'],
+  filterKeys: ['id', 'name', 'createdAt'],
+}));
+const jsonValidator = zValidator('json', z.object({
+  name: z.string().min(1, "Name is required"),
+  storeUrl: z.url().optional(),
+  thumbnailUrl: z.string().optional(),
+}));
+
+// Hono app for /avatars routes
 const app = new Hono()
 
 // POST /avatars
-.post('/', async (c) => {
+.post('/', jsonValidator, async (c) => {
     try {
       const body = await c.req.json();
       if (!body.name) return c.json({ error: 'Name is required' }, 400);
@@ -33,10 +48,7 @@ const app = new Hono()
 )
 
 // GET /avatars
-.get('/', zValidator('query', baseQueryForGetList(avatars, {
-    sortKeys: ['id', 'createdAt'],
-    filterKeys: ['id', 'name', 'createdAt'],
-  })), async (c) => {
+.get('/', queryValidator, async (c) => {
   try {
     const { limit, offset, sort, order, filter } = c.req.valid('query');
     console.log({ limit, offset, sort, order, filter });
@@ -53,7 +65,7 @@ const app = new Hono()
 })
 
 // GET /avatars/:id
-.get('/:id', async (c) => {
+.get('/:id', paramValidator, async (c) => {
   try {
     const id = c.req.param('id');
     const avatar = await db.select().from(avatars).where(eq(avatars.id, id)).limit(1);
@@ -69,13 +81,12 @@ const app = new Hono()
   }
 })
 
+
 // PUT /avatars/:id
-.put('/:id', zValidator('json', createInsertSchema(avatars)), 
-async (c) => {
+.put('/:id', paramValidator, jsonValidator, async (c) => {
   try {
     const id = c.req.param('id');
-    const body = await c.req.valid('json');
-    if (!body.name) return c.json({ error: 'Name is required' }, 400);
+    const body = c.req.valid('json');
 
     const result = await db.update(avatars)
       .set({
@@ -100,7 +111,7 @@ async (c) => {
 })
 
 // DELETE /avatars/:id
-.delete('/:id', async (c) => {
+.delete('/:id', paramValidator, async (c) => {
   try {
     const id = c.req.param('id');
     const deletedCount = await db.delete(avatars).where(eq(avatars.id, id)).returning().then(res => res.length);

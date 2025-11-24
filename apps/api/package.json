@@ -18,7 +18,7 @@
     "@hono/node-server": "^1.19.6",
     "@hono/zod-validator": "^0.7.5",
     "bcrypt": "^6.0.0",
-    "drizzle-orm": "^0.30.0",
+    "drizzle-orm": "^0.44.7",
     "drizzle-zod": "^0.8.3",
     "hono": "^4.10.6",
     "jose": "^6.1.2",
@@ -31,7 +31,7 @@
     "@types/node": "^24.10.1",
     "@types/uuid": "^11.0.0",
     "dotenv": "^16.4.5",
-    "drizzle-kit": "^0.20.14",
+    "drizzle-kit": "^0.31.7",
     "tsx": "^4.7.1",
     "typescript": "^5.9.3"
   }
