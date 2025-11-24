@@ -25,6 +25,7 @@ export const cookieOptions = {
 };
 
 const app = new Hono<AppEnv>()
+  .route('/', login)
   .route('/register', register)
   .route('/login', login)
   .route('/me', me)
