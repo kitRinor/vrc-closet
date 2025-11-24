@@ -1,7 +1,8 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-
+import {config} from 'dotenv';
+config();
 
 import * as relations from './schema/_relations';
 import { avatars } from './schema/avatars';

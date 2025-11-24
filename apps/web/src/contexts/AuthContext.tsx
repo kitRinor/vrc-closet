@@ -68,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     setIsLoading(true);
     try {
-      const res = await api.auth.logout.$post();
+      const res = await api.auth.logout.$put();
       if (res.ok) {
         setUser(null);
       } else {

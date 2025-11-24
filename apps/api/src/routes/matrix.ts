@@ -1,7 +1,10 @@
 import { Hono } from 'hono';
-import { db, avatars, items, compatibility, Avatar, Item, Compatibility } from '../db';
+import { db } from '../db';
 import { eq } from 'drizzle-orm';
 import { TEMP_USER_ID } from '../const';
+import { avatars } from '@/db/schema/avatars';
+import { items } from '@/db/schema/items';
+import { compatibility } from '@/db/schema/compatibility';
 
 const app = new Hono()
 
@@ -15,11 +18,7 @@ const app = new Hono()
       db.select().from(compatibility).where(eq(compatibility.userId, TEMP_USER_ID)),
     ]);
 
-    return c.json<{
-      avatars: Avatar[],
-      items: Item[],
-      compatibilities: Compatibility[],
-    }>({
+    return c.json({
       avatars: allAvatars,
       items: allItems,
       compatibilities: allCompatibilities,

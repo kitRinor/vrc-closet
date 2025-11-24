@@ -1,31 +1,34 @@
-import { createFactory } from 'hono/factory';
+
+import { AppEnv } from '@/type';
+import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { db } from '@/db';
 import { eq } from 'drizzle-orm';
 import { _template_ } from '@/db/schema/_template_';
 
-const factory = createFactory();
-
 const paramValidator = zValidator('param', z.object({
   id: z.uuid("ID must be a valid UUID"),
 }));
 
-export const deleteAvatar = factory.createHandlers(
-  paramValidator,
-  async (c) => {
-    try {
-      const { id } = c.req.valid('param');
-      const deletedCount = await db.delete(_template_).where(eq(_template_.id, id)).returning().then(res => res.length);
+const del = new Hono<AppEnv>()
+  .delete(
+    '/:id',
+    paramValidator,
+    async (c) => {
+      try {
+        const { id } = c.req.valid('param');
+        const result = await db.delete(_template_).where(eq(_template_.id, id)).returning();
 
-      if (deletedCount === 0) {
-        return c.json({ error: 'not found' }, 404);
+        if (result.length === 0) {
+          return c.json({ error: 'not found' }, 404);
+        }
+
+        return c.json({ success: true }, 200);
+      } catch (e) {
+        console.error(e);
+        return c.json({ error: 'Failed to delete' }, 500);
       }
-
-      return c.json({ success: true }, 200);
-    } catch (e) {
-      console.error(e);
-      return c.json({ error: 'Failed to delete' }, 500);
     }
-  }
-);
+  );
+export default del;

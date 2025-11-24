@@ -2,24 +2,12 @@ import { createMiddleware } from 'hono/factory';
 import { verifyToken } from '../lib/auth';
 import { getCookie } from 'hono/cookie';
 import { BlankEnv, Env } from 'hono/types';
-
-export type BaseEnv = Env & {
-    Variables: {
-      userId: string | null;
-    };
-};
-
-export type AuthedEnv = Env & {
-  Variables: {
-    userId: string;
-  };
-  Bindings: {}; 
-};
+import { AppEnv } from '@/type';
 
 /**
  * トークンを検証し、c.get('userId') にユーザーIDを設定する認証ミドルウェア
  */
-export const authMiddleware = createMiddleware<BaseEnv>(async (c, next) => {
+export const authMiddleware = createMiddleware<AppEnv>(async (c, next) => {
   // 1. Cookieからトークンを取得 (HttpOnlyなので自動でCookieから読み取る)
   const token = getCookie(c, 'auth_token');
   
@@ -51,7 +39,7 @@ export const authMiddleware = createMiddleware<BaseEnv>(async (c, next) => {
 });
 
 // 認証必須のルートで使うヘルパー
-export const requireAuth = createMiddleware<AuthedEnv>(async (c, next) => {
+export const requireAuth = createMiddleware<AppEnv>(async (c, next) => {
   const userId = c.get('userId');
   if (!userId) {
     return c.json({ error: 'Unauthorized: Login required' }, 401);

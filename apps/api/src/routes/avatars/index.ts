@@ -1,15 +1,17 @@
 import { Hono } from 'hono';
-import { listAvatars } from './list';
-import { createAvatar } from './create';
-import { getAvatar } from './get';
-import { updateAvatar } from './update';
-import { deleteAvatar } from './delete';
+import { AppEnv } from '@/type';
 
-const app = new Hono()
-  .get('/', ...listAvatars)
-  .post('/', ...createAvatar)
-  .get('/:id', ...getAvatar)
-  .put('/:id', ...updateAvatar)
-  .delete('/:id', ...deleteAvatar);
+import list from './list';
+import create from './create';
+import get from './get';
+import update from './update';
+import del from './delete';
+
+const app = new Hono<AppEnv>()
+  .route('/', list)
+  .route('/', create)
+  .route('/', get)
+  .route('/', update)
+  .route('/', del);
 
 export default app;

@@ -9,10 +9,12 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Grid3X3, User as UserIcon } from "lucide-react";
+import { UserIcon, EllipsisIcon, ShirtIcon, Grid3X3Icon, PlusIcon } from "lucide-react";
 import { PageLayout } from "@/components/pageLayout";
 import { useTranslation } from "react-i18next";
 import type { Avatar, Item } from "@/lib/api";
+
+const MAX_VISIBLE = 10;
 
 export default function HomePage() {
   const { t } = useTranslation();
@@ -35,7 +37,7 @@ export default function HomePage() {
   const fetchAvatars = async () => {
     const res = await api.avatars.$get({
       query: { 
-        limit: '20',
+        limit: MAX_VISIBLE+1,
         order: 'desc',
         sort: 'createdAt',
       }
@@ -45,7 +47,7 @@ export default function HomePage() {
   const fetchItems = async () => {
     const res = await api.items.$get({
       query:{
-        limit: '20',
+        limit: '16',
         order: 'desc',
         sort: 'createdAt',
       }
@@ -65,14 +67,6 @@ export default function HomePage() {
     fetchItems(); 
   };
 
-  // 詳細に移動
-  const handleClickAvatar = (avatar: Avatar) => {
-    navigate(`/avatars/${avatar.id}`);
-  };
-  const handleClickItem = (item: Item) => {
-    navigate(`/items/${item.id}`);
-  };
-
   return (
     <PageLayout>
       <div className="gap-8 flex flex-col">
@@ -82,7 +76,7 @@ export default function HomePage() {
             <Card className="hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer h-full border-2 border-transparent hover:border-zinc-200 dark:hover:border-zinc-800">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-lg font-bold">{t("home.matrix")}</CardTitle>
-                <Grid3X3 className="h-5 w-5 text-zinc-500" />
+                <Grid3X3Icon className="h-5 w-5 text-zinc-500" />
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-zinc-500">
@@ -111,7 +105,8 @@ export default function HomePage() {
             data={avatars}
             isDialogOpen={openNewAvatar}
             setIsDialogOpen={setOpenNewAvatar}
-            handleClick={handleClickAvatar}
+            onClickTitle={() => navigate("/avatars")}
+            onClickItem={(item) => navigate(`/avatars/${item.id}`)}
             handleAdd={handleAddAvatar}
           />
         </section>
@@ -122,7 +117,8 @@ export default function HomePage() {
             data={items}
             isDialogOpen={openNewItem}
             setIsDialogOpen={setOpenNewItem}
-            handleClick={handleClickItem}
+            onClickTitle={() => navigate("/items")}
+            onClickItem={(item) => navigate(`/items/${item.id}`)}
             handleAdd={handleAddItem}
           />
         </section>
@@ -135,14 +131,18 @@ const MyAssetList = <T extends Avatar | Item>(props:{
   t_mode?: 'avatar' | 'item'; 
   data: T[];
   isDialogOpen: boolean;
+  maxVisible?: number
   setIsDialogOpen: (open: boolean) => void;
-  handleClick: (item: T) => void;
+  onClickTitle: () => void;
+  onClickItem: (item: T) => void;
   handleAdd: (item: Partial<T>) => void;
 }) => {
 
   const { t } = useTranslation();
   const [newData, setNewData] = useState<Partial<T>>({});
+  const maxVisible = props.maxVisible ?? 10;
 
+  const Icon = props.t_mode === 'item' ? ShirtIcon : UserIcon;
   const trans = {
     title: props.t_mode === 'item' ? t("home.my_items") : t("home.my_avatars"),
     addDialogTitle: props.t_mode === 'item' ? t("home.add_item_dialog_title") : t("home.add_avatar_dialog_title"),
@@ -153,14 +153,14 @@ const MyAssetList = <T extends Avatar | Item>(props:{
   return (
     <Card className="hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors h-full border-2 border-transparent hover:border-zinc-200 dark:hover:border-zinc-800">
       <CardHeader className="pb-2 flex flex-row justify-between">
-        <CardTitle className="text-lg font-bold flex items-center gap-2">
-          <UserIcon className="h-5 w-5" /> 
+        <CardTitle onClick={props.onClickTitle} className="text-lg font-bold flex items-center gap-2 cursor-pointer">
+          <Icon className="h-5 w-5" /> 
           {trans.title}
         </CardTitle>
 
         <Dialog open={props.isDialogOpen} onOpenChange={props.setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="sm"><Plus className="h-4 w-4 mr-1" /> {t("action.add")}</Button>
+            <Button size="sm"><PlusIcon className="h-4 w-4 mr-1" /> {t("action.add")}</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -208,9 +208,9 @@ const MyAssetList = <T extends Avatar | Item>(props:{
 
       {/* 横スクロール可能に */}
       <div className="flex gap-4 p-4 overflow-x-auto">
-        {props.data.map((item) => (
+        {props.data.slice(0, maxVisible).map((item) => (
           <Card 
-            key={item.id} onClick={() => props.handleClick(item)} 
+            key={item.id} onClick={() => props.onClickItem(item)} 
             className="min-w-[33%] w-[33%] md:min-w-[25%] md:w-[25%] lg:min-w-[20%] lg:w-[20%] hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors h-full border-2 border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 overflow-hidden transition-colors cursor-pointer"
             // className="w-1/5 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors h-full border-2 border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 overflow-hidden transition-colors cursor-pointer"
           >
@@ -225,11 +225,6 @@ const MyAssetList = <T extends Avatar | Item>(props:{
             </div>
             <CardFooter className="p-3 flex flex-col items-start">
               <span className="font-bold truncate w-full">{item.name}</span>
-              {item.storeUrl && (
-                <a href={item.storeUrl} target="_blank" rel="noreferrer" className="text-xs text-blue-500 hover:underline">
-                  {t("home.open_store")}
-                </a>
-              )}
             </CardFooter>
           </Card>
         ))}
@@ -238,6 +233,18 @@ const MyAssetList = <T extends Avatar | Item>(props:{
           <div className="col-span-full text-center py-10 text-zinc-500 bg-zinc-50 rounded-lg border border-dashed">
             {trans.emptyMessage}
           </div>
+        )}
+        {props.data.length > maxVisible && (
+          <Card 
+            key="more"
+            className="min-w-[10%] w-[10%] md:min-w-[8%] md:w-[8%] lg:min-w-[6%] lg:w-[6%] overflow-hidden bg-transparent border-transparent shadow-none text-zinc-400 transition-colors"
+          >
+            <div className="aspect-[1/4] flex items-center justify-center">
+              <div className="w-full h-full flex items-center justify-center">
+                <EllipsisIcon className="h-12 w-12" />
+              </div>
+            </div>
+          </Card>
         )}
       </div>
     </Card>

@@ -1,4 +1,5 @@
-import { createFactory } from 'hono/factory';
+import { Hono } from 'hono';
+import { AppEnv } from '@/type';
 import { zValidator } from '@hono/zod-validator';
 import { db } from '@/db';
 import { baseQueryForGetList } from '@/lib/validator';
@@ -7,14 +8,15 @@ import { generateSorting } from '@/lib/queryUtils/sort';
 import { TEMP_USER_ID } from '@/const';
 import { outfits } from '@/db/schema/outfits';
 
-const factory = createFactory();
 
-export const listItems = factory.createHandlers(
-  zValidator('query', baseQueryForGetList(outfits, {
-    sortKeys: ['id', 'createdAt'],
-    filterKeys: ['id', 'createdAt'],
-  })),
-  async (c) => {
+const list = new Hono<AppEnv>()
+  .get(
+    '/',
+    zValidator('query', baseQueryForGetList(outfits, {
+      sortKeys: ['id', 'createdAt'],
+      filterKeys: ['id', 'createdAt'],
+    })),
+    async (c) => {
     try {
       const { limit, offset, sort, order, filter } = c.req.valid('query');
       
@@ -31,3 +33,4 @@ export const listItems = factory.createHandlers(
     }
   }
 );
+export default list;

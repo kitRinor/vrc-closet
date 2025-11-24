@@ -4,8 +4,8 @@ import { z } from 'zod';
 import { TEMP_USER_ID } from '@/const';
 import { db } from '@/db';
 import { avatars } from '@/db/schema/avatars';
-
-const factory = createFactory();
+import { Hono } from 'hono';
+import { AppEnv } from '@/type';
 
 const jsonValidator = zValidator('json', z.object({
   name: z.string().min(1, "Name is required"),
@@ -13,11 +13,13 @@ const jsonValidator = zValidator('json', z.object({
   thumbnailUrl: z.string().url().optional().or(z.literal("")),
 }));
 
-export const createAvatar = factory.createHandlers(
-  jsonValidator,
-  async (c) => {
-    try {
-      const body = c.req.valid('json');
+const create = new Hono<AppEnv>()
+  .post(
+    '/',
+    jsonValidator,
+    async (c) => {
+      try {
+        const body = c.req.valid('json');
 
       const result = await db.insert(avatars).values({
         name: body.name,
@@ -33,3 +35,4 @@ export const createAvatar = factory.createHandlers(
     }
   }
 );
+export default create;

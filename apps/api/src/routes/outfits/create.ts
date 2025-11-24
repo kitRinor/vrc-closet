@@ -1,11 +1,10 @@
-import { createFactory } from 'hono/factory';
+import { Hono } from 'hono';
+import { AppEnv } from '@/type';
+
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { TEMP_USER_ID } from '@/const';
 import { db } from '@/db';
 import { outfits } from '@/db/schema/outfits';
-
-const factory = createFactory();
 
 const jsonValidator = zValidator('json', z.object({
   userId: z.uuid("User ID must be a valid UUID"),
@@ -13,12 +12,13 @@ const jsonValidator = zValidator('json', z.object({
   avatarId: z.uuid("Avatar ID must be a valid UUID"),
 }));
 
-export const createAvatar = factory.createHandlers(
-  jsonValidator,
-  async (c) => {
-    try {
-      const body = c.req.valid('json');
-
+const create = new Hono<AppEnv>()
+  .post(
+    '/',
+    jsonValidator,
+    async (c) => {
+      try {
+        const body = c.req.valid('json');
       const result = await db.insert(outfits).values({
         ...body,
       }).returning();
@@ -30,3 +30,4 @@ export const createAvatar = factory.createHandlers(
     }
   }
 );
+export default create;

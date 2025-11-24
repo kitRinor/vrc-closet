@@ -1,5 +1,4 @@
 import { serve } from '@hono/node-server';
-import { config } from 'dotenv';
 import { Hono } from 'hono';
 // import { OpenAPIHono } from '@hono/zod-openapi';
 import { cors } from 'hono/cors';
@@ -13,10 +12,13 @@ import avatarsRoute from './routes/avatars';
 import itemsRoute from './routes/items';
 import compatibilityRoute from './routes/compatibility';
 import outfitsRoute from './routes/outfits';
+import { AppEnv } from './type';
 
+import { config } from 'dotenv';
 config();
 
-const app = new Hono();
+
+const app = new Hono<AppEnv>();
 
 // Global Middleware
 // Allow CORS for Frontend
@@ -50,3 +52,6 @@ serve({
   fetch: app.fetch,
   port,
 });
+
+
+

@@ -1,11 +1,12 @@
-import { createFactory } from 'hono/factory';
+
+import { AppEnv } from '@/type';
+import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { _template_ } from '@/db/schema/_template_';
 
-const factory = createFactory();
 
 const paramValidator = zValidator('param', z.object({
   id: z.uuid(),
@@ -15,12 +16,14 @@ const jsonValidator = zValidator('json', z.object({
   // Define your updatable fields here
 }).partial());
 
-export const updateAvatar = factory.createHandlers(
-  paramValidator,
-  jsonValidator,
-  async (c) => {
-    try {
-      const { id } = c.req.valid('param');
+const update = new Hono<AppEnv>()
+  .put(
+    '/:id',
+    paramValidator,
+    jsonValidator,
+    async (c) => {
+      try {
+        const { id } = c.req.valid('param');
       const body = c.req.valid('json');
 
       const result = await db.update(_template_)
@@ -41,3 +44,4 @@ export const updateAvatar = factory.createHandlers(
     }
   }
 );
+export default update;
