@@ -10,7 +10,7 @@
 
     "paths": {
       "@/*": ["./src/*"],
-      "@repo/api": ["../../apps/api/src/index.ts"],
+      "@repo/api/*": ["../../apps/api/src/*"],
     },
 
     /* Bundler mode */

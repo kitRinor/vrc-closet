@@ -8,8 +8,7 @@
     "forceConsistentCasingInFileNames": true,
     
     "paths": {
-      // "@/*": ["./src/*"], // これするとhonoRPCの型補完バグる
-      "@repo/db": ["../../packages/db/src/index.ts"]
+      "@/*": ["./src/*"],
     }
   },
   "include": ["src/**/*"]
