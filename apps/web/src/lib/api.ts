@@ -14,7 +14,6 @@ const fetchFn = (...args: Parameters<typeof fetch>) => {
 
 export const api = hc<AppType>(apiUrl, {fetch: fetchFn});
 
-
 export type Avatar = InferResponseType<typeof api.avatars[':id']['$get'], 200>; 
 export type Item = InferResponseType<typeof api.items[':id']['$get'], 200>;
 export type Outfit = InferResponseType<typeof api.outfits[':id']['$get'], 200>;

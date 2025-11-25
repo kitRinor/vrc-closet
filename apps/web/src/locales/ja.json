@@ -5,37 +5,53 @@
     "description": "アバターと衣装の対応関係を可視化しよう",
     "footer": "© 2025 VRClo. Built for VRChat Users."
   },
-
-  "action": {
-    "__" : "ボタンや操作に関する文言",
-    "add": "追加",
-    "save": "保存",
-    "input_placeholder": "{{field}}を入力してください",
-    "cancel": "キャンセル",
-    "delete": "削除",
-    "loading": "読み込み中...",
-    "error_occurred": "エラーが発生しました"
-  },
-
-  
   "core": {
-    "__": "データ,プロパティ名などに関する文言",
-    "_generic": {
-      "name": "名前",
-      "store_url": "ストアURL",
-      "thumbnail_url": "サムネイルURL"
+    "__" : "共通で使われる文言",
+    "action": {
+      "__" : "ボタンや操作に関する文言",
+      "add": "追加",
+      "save": "保存",
+      "cancel": "キャンセル",
+      "create": "作成",
+      "delete": "削除",
+      "edit": "編集",
+      "update": "更新",
+      "upload": "アップロード",
+      "fetch": "取得",
+      "confirm": "確認",
+      "close": "閉じる",
+      "back": "戻る",
+      "search": "検索",
+      "reset": "リセット",
+      "load_more": "もっと見る",
+      "input_placeholder": "{{field}}を入力してください",
+      "no_data": "データがありません",
+      "loading": "ローディング中...",
+      "error_occurred": "エラーが発生しました"
     },
-    "user": {
-      "name": "ユーザー名"
-    },
-    "avatar": {
-      "name": "アバター名"
-    },
-    "item": {
-      "name": "アイテム名"
-    },
-    "outfit": {
-      "name": "コーデ名"
+    "data": {
+      "__": "データ,プロパティ名などに関する文言",
+      "_generic": {
+        "name": "名前"
+      },
+      "user": {
+        "name": "ユーザー名"
+      },
+      "avatar": {
+        "name": "アバター名",
+        "store_url": "ストアURL",
+        "thumbnail_url": "サムネイルURL"
+      },
+      "item": {
+        "name": "アイテム名",
+        "category": "カテゴリー",
+        "store_url": "ストアURL",
+        "thumbnail_url": "サムネイルURL"
+      },
+      "outfit": {
+        "name": "コーデ名",
+        "base_avatar": "ベースアバター"
+      }
     }
   },
 
@@ -51,6 +67,8 @@
     "if_new_user": "アカウントを作成"
   },
 
+
+
   "index": {
     "__": "トップページ(LP)に関する文言",
     "welcome_message": "VRCloへようこそ！",
@@ -60,6 +78,7 @@
   },
 
   "home": {
+    "__": "ホームページに関する文言",
     "welcome": "ようこそ、{{name}}さん",
     "open_store": "ストアを開く",
     "my_avatars": "マイアバター",
@@ -78,6 +97,84 @@
     "community_outfit_description": "他のユーザーが公開したアバター改変やコーデの組み合わせを見れるようになります。",
     "matrix": "対応マトリクス",
     "matrix_description": "アバターと衣装の対応状況を表形式で確認・編集します。"
+  },
+
+  "avatars": {
+    "__": "アバターページ関連の文言",
+    "list": {
+      "page_title": "マイアバター一覧",
+      "page_description": "登録されているアバターの一覧",
+      "add_avatar": "アバター追加",
+      "add_avatar_description": "新しいアバターを追加します。",
+      "avatar_count": "{{count}} アバター",
+      "no_avatars": "まだアバターが登録されていません。まずはアバターを追加しましょう！"
+    },
+    "detail": {
+      "page_title": "アバター詳細",
+      "page_description": "アバターの詳細情報と関連コーデ一覧",
+      "store_link": "ストアで見る",
+      "used_in_coordinations": "このアイテムを含むコーデ"
+    },
+    "edit": {
+      "page_title": "アバター編集",
+      "page_description": "アバターの情報の編集",
+      "store_url_help": "BOOTHの商品URLを入力して右のボタンを押すと、名前と画像を自動取得します。",
+      "auto_fill_tooltip": "URLから情報を自動取得",
+      "apply_name_tooltip": "ストアの情報から名前を適用",
+      "fetch_success": "アバター情報を取得しました",
+      "fetch_failed": "情報の取得に失敗しました。URLを確認してください。",
+      "update_success": "更新しました",
+      "update_failed": "更新に失敗しました",
+      "delete_success": "削除しました",
+      "delete_failed": "削除できませんでした"
+    }
+  },
+
+  "items": {
+    "__": "アイテムページ関連の文言",
+    "list": {
+      "page_title": "マイアイテム一覧",
+      "page_description": "登録されているアイテムの一覧",
+      "add_item": "アイテム追加",
+      "add_item_description": "新しい衣装アイテムを追加します。",
+      "item_count": "{{count}} アイテム",
+      "no_items": "まだアイテムが登録されていません。まずはアイテムを追加しましょう！"
+    },
+    "detail": {
+      "page_title": "アイテム詳細",
+      "page_description": "アイテムの詳細情報と関連コーデ一覧",
+      "store_link": "ストアで見る",
+      "used_in_coordinations": "このアイテムを含むコーデ"
+    },
+    "edit": {
+      "page_title": "アイテム編集",
+      "page_description": "アイテムの情報の編集",
+      "store_url_help": "BOOTHの商品URLを入力して右のボタンを押すと、名前と画像を自動取得します。",
+      "auto_fill_tooltip": "URLから情報を自動取得",
+      "apply_name_tooltip": "ストアの情報から名前を適用",
+      "fetch_success": "アイテム情報を取得しました",
+      "fetch_failed": "情報の取得に失敗しました。URLを確認してください。",
+      "update_success": "更新しました",
+      "update_failed": "更新に失敗しました",
+      "delete_success": "削除しました",
+      "delete_failed": "削除できませんでした"
+    }
+  },
+
+
+  "matrix": {
+    "__": "対応マトリクスページ関連の文言",
+    "page_title": "対応マトリクス",
+    "page_description": "アバターとアイテムの対応を一覧管理できます",
+    "fetch_success": "マトリクス情報を取得しました",
+    "fetch_failed": "情報の取得に失敗しました。URLを確認してください。",
+    "update_success": "更新しました",
+    "update_failed": "更新に失敗しました",
+    "status": {
+      "official": "公式対応",
+      "modified": "改変対応",
+      "unsupported": "・"
+    }
   },
 
   "not_found": {

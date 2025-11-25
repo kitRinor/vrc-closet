@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { api } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,18 +12,19 @@ import { Card, CardFooter } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, User as UserIcon } from "lucide-react";
+import { ArrowLeft, Plus, User as UserIcon } from "lucide-react";
 
 // Type
 import type { InferResponseType } from "hono/client";
-type ItemsResponse = InferResponseType<typeof api.items.$get, 200>;
+import { PageHeader } from "@/components/pageHeader";
+type ItemResponse = InferResponseType<typeof api.items[":id"]['$get'], 200>;
 
 export default function ItemsIndexPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
 
-  const [items, setItems] = useState<ItemsResponse>([]);
+  const [items, setItems] = useState<ItemResponse[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   // 新規作成用State (スキーマに合わせて修正)
@@ -31,7 +32,7 @@ export default function ItemsIndexPage() {
   const [newThumbnailUrl, setNewThumbnailUrl] = useState<string | undefined>(undefined);
   const [newStoreUrl, setNewStoreUrl] = useState("");
 
-  const fetchItems = async () => {
+  const fetchData = async () => {
     const res = await api.items.$get({
       query: {
         limit: '50',
@@ -43,7 +44,7 @@ export default function ItemsIndexPage() {
   };
 
   useEffect(() => {
-    if (user) fetchItems();
+    if (user) fetchData();
   }, [user]);
 
   const handleAdd = async () => {
@@ -52,8 +53,8 @@ export default function ItemsIndexPage() {
     await api.items.$post({ 
       json: { 
         name: newName,
-        thumbnailUrl: newThumbnailUrl, // imageUrl -> thumbnailUrl
-        storeUrl: newStoreUrl || undefined // boothUrl -> storeUrl
+        thumbnailUrl: newThumbnailUrl || null, // imageUrl -> thumbnailUrl
+        storeUrl: newStoreUrl || null // boothUrl -> storeUrl
       } 
     });
     
@@ -62,26 +63,24 @@ export default function ItemsIndexPage() {
     setNewThumbnailUrl(undefined);
     setNewStoreUrl("");
     setIsDialogOpen(false);
-    fetchItems();
+    fetchData();
   };
 
   return (
     <PageLayout>
       {/* ヘッダー */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold">{t('home.my_items')}</h1>
-          <p className="text-zinc-500 text-sm">登録済みのアイテム一覧</p>
-        </div>
-
+      <PageHeader
+        title={t('items.list.page_title')}
+        description={t('items.list.page_description')}
+      >
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button><Plus className="h-4 w-4 mr-2" /> {t('action.add')}</Button>
+            <Button><Plus className="h-4 w-4 mr-2" /> {t('core.action.add')}</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>アイテムを追加</DialogTitle>
-              <DialogDescription>新しいアイテムを登録します。</DialogDescription>
+              <DialogTitle>{t('items.list.add_item')}</DialogTitle>
+              <DialogDescription>{t('items.list.add_item_description')}</DialogDescription>
             </DialogHeader>
             
             <div className="space-y-4 py-4">
@@ -91,21 +90,21 @@ export default function ItemsIndexPage() {
                 onUploadSuccess={setNewThumbnailUrl} 
               />
               <div className="space-y-2">
-                <Label>{t('core.item.name')} <span className="text-red-500">*</span></Label>
+                <Label>{t('core.data.item.name')} <span className="text-red-500">*</span></Label>
                 <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="例: 桔梗" />
               </div>
               <div className="space-y-2">
-                <Label>Store URL (BOOTH etc.)</Label>
+                <Label>{t('core.data.item.store_url')}</Label>
                 <Input value={newStoreUrl} onChange={e => setNewStoreUrl(e.target.value)} placeholder="https://booth.pm/..." />
               </div>
             </div>
 
             <DialogFooter>
-              <Button onClick={handleAdd} disabled={!newName}>{t('action.add')}</Button>
+              <Button onClick={handleAdd} disabled={!newName}>{t('core.action.add')}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
+      </PageHeader>
 
       {/* リスト */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">

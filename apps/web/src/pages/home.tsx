@@ -57,14 +57,47 @@ export default function HomePage() {
 
   // 追加処理
   const handleAddAvatar = async (data: Partial<Avatar>) => {
-    const res = await api.avatars.$post({ json: data });
-    setOpenNewAvatar(false);
-    fetchAvatars(); 
+    // validate
+    if (!data.name || data.name.trim() === "") {
+      return { ok: false, errLoc: 'name', message: 'Name is required' };
+    }
+
+    const newData = {
+      ...data,
+      name: data.name.trim(),
+      storeUrl: data.storeUrl?.trim() || null,
+      thumbnailUrl: data.thumbnailUrl?.trim() || null,
+    }
+
+    try {
+      const res = await api.avatars.$post({ json: newData });
+      setOpenNewAvatar(false);
+      fetchAvatars();
+      return { ok: true  }; 
+    } catch (error) {
+      return { ok: false, message: error instanceof Error ? error.message : 'An error occurred' };
+    }
   };
   const handleAddItem = async (data: Partial<Item>) => {
-    const res = await api.items.$post({ json: data });
-    setOpenNewItem(false);
-    fetchItems(); 
+    // validate
+    if (!data.name || data.name.trim() === "") {
+      return { ok: false, errLoc: 'name', message: 'Name is required' };
+    }
+
+    const newData = {
+      ...data,
+      name: data.name.trim(),
+      storeUrl: data.storeUrl?.trim() || null,
+      thumbnailUrl: data.thumbnailUrl?.trim() || null,
+    }
+    try {
+      const res = await api.items.$post({ json: newData });
+      setOpenNewItem(false);
+      fetchItems(); 
+      return { ok: true  };
+    } catch (error) {
+      return { ok: false, message: error instanceof Error ? error.message : 'An error occurred' };
+    }
   };
 
   return (
@@ -135,11 +168,16 @@ const MyAssetList = <T extends Avatar | Item>(props:{
   setIsDialogOpen: (open: boolean) => void;
   onClickTitle: () => void;
   onClickItem: (item: T) => void;
-  handleAdd: (item: Partial<T>) => void;
+  handleAdd: (item: Partial<T>) => Promise<{
+    ok: boolean;
+    errLoc?: string; 
+    message?: string;
+  }>;
 }) => {
 
   const { t } = useTranslation();
   const [newData, setNewData] = useState<Partial<T>>({});
+
   const maxVisible = props.maxVisible ?? 10;
 
   const Icon = props.t_mode === 'item' ? ShirtIcon : UserIcon;
@@ -148,6 +186,20 @@ const MyAssetList = <T extends Avatar | Item>(props:{
     addDialogTitle: props.t_mode === 'item' ? t("home.add_item_dialog_title") : t("home.add_avatar_dialog_title"),
     addDialogDescription: props.t_mode === 'item' ? t("home.add_item_dialog_description") : t("home.add_avatar_dialog_description"),
     emptyMessage: props.t_mode === 'item' ? t("home.my_items_empty") : t("home.my_avatars_empty"),
+
+    nameField: props.t_mode === 'item' ? t("core.data.item.name") : t("core.data.avatar.name"),
+    storeUrlField: props.t_mode === 'item' ? t("core.data.item.store_url") : t("core.data.avatar.store_url"),
+    thumbnailUrlField: props.t_mode === 'item' ? t("core.data.item.thumbnail_url") : t("core.data.avatar.thumbnail_url"),
+  }
+
+  const handleSubmit = async () => {
+    const res = await props.handleAdd(newData);
+    if (res.ok) {
+      setNewData({});
+      props.setIsDialogOpen(false);
+    } else {
+      alert(res.message ?? "Error occurred");
+    }
   }
 
   return (
@@ -160,7 +212,7 @@ const MyAssetList = <T extends Avatar | Item>(props:{
 
         <Dialog open={props.isDialogOpen} onOpenChange={props.setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="sm"><PlusIcon className="h-4 w-4 mr-1" /> {t("action.add")}</Button>
+            <Button size="sm"><PlusIcon className="h-4 w-4 mr-1" /> {t("core.action.add")}</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -171,35 +223,35 @@ const MyAssetList = <T extends Avatar | Item>(props:{
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="name">{t(`core._generic.name`)}</Label>
+                <Label htmlFor="name">{trans.nameField}</Label>
                 <Input 
                   id="name" 
-                  placeholder={t("action.input_placeholder", { field: t(`core._generic.name`) })} 
+                  placeholder={t("core.action.input_placeholder", { field: trans.nameField })} 
                   value={newData.name}
                   onChange={(e) => setNewData({ ...newData, name: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="store_url">{t(`core._generic.store_url`)}</Label>
+                <Label htmlFor="store_url">{trans.storeUrlField}</Label>
                 <Input 
                   id="store_url" 
-                  placeholder={t("action.input_placeholder", { field: t(`core._generic.store_url`) })} 
+                  placeholder={t("core.action.input_placeholder", { field: trans.storeUrlField })} 
                   value={newData.storeUrl ?? undefined}
                   onChange={(e) => setNewData({ ...newData, storeUrl: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="thumbnail_url">{t(`core._generic.thumbnail_url`)}</Label>
+                <Label htmlFor="thumbnail_url">{trans.thumbnailUrlField}</Label>
                 <Input 
                   id="thumbnail_url" 
-                  placeholder={t("action.input_placeholder", { field: t(`core._generic.thumbnail_url`) })} 
+                  placeholder={t("core.action.input_placeholder", { field: trans.thumbnailUrlField })} 
                   value={newData.thumbnailUrl ?? undefined}
                   onChange={(e) => setNewData({ ...newData, thumbnailUrl: e.target.value })}
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button onClick={() => props.handleAdd(newData)}>{t("action.add")}</Button>
+              <Button onClick={handleSubmit}>{t("core.action.add")}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
