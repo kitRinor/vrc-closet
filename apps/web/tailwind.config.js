@@ -37,7 +37,7 @@ export default {
 					DEFAULT: 'hsl(var(--text))',
 					inverted: 'hsl(var(--text-inverted))',
 				},
-				vrclostatus: {
+				compatibilitystatus: {
 					official: {
 						DEFAULT: 'hsl(var(--status-official))',
 						foreground: 'hsl(var(--status-official-foreground))'

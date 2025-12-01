@@ -12,7 +12,13 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User as UserIcon, Image as ImageIcon, Search, Pencil, Eye, Check, AlertCircle, X } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { User as UserIcon, Image as ImageIcon, Search, Pencil, Eye, Check, AlertCircle, X, ArrowUpDown, ArrowUp, ArrowDown, ListFilter } from "lucide-react";
 
 // Utils
 import { cn } from "@/lib/utils";
@@ -22,6 +28,14 @@ import type { InferResponseType } from "hono/client";
 
 type MatrixResponse = InferResponseType<typeof dashboardApi.matrix.$get, 200>;
 
+// Status priority for sorting
+const STATUS_WEIGHT = {
+  official: 3,
+  modified: 2,
+  unsupported: 1,
+  undefined: 0,
+};
+
 export default function MatrixPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -30,10 +44,18 @@ export default function MatrixPage() {
   const prevData = useRef<MatrixResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // 🛠️ New States
+  // UI States
   const [isEditing, setIsEditing] = useState(false);
   const [avatarFilter, setAvatarFilter] = useState("");
   const [itemFilter, setItemFilter] = useState("");
+
+  // 🛠️ Sort State
+  const [sortConfig, setSortConfig] = useState<{
+    type: "avatar" | "item";
+    itmKey: string; // "name" | "category"
+    avtKey: string; // avatarId 
+    direction: "desc" | "asc"; 
+  }>({ type: "item", itmKey: "name", avtKey: "", direction: "asc" });
 
   // Fetch matrix data on load
   const fetchMatrix = async () => {
@@ -74,6 +96,56 @@ export default function MatrixPage() {
     );
   }, [data, itemFilter]);
 
+  // 🔄 Sorting Logic
+  const sortedItems = useMemo(() => {
+    const { type, avtKey, itmKey, direction } = sortConfig;
+    
+    // If sorting by avatar status, we need data
+    if (type === "avatar" && !data) return filteredItems;
+
+    return [...filteredItems].sort((a, b) => {
+      let result = 0;
+
+      if (type === "item") {
+        // Sort by Item Property (name, category)
+        const valA = a[itmKey as keyof typeof a]?.toString().toLowerCase() || "";
+        const valB = b[itmKey as keyof typeof b]?.toString().toLowerCase() || "";
+        result = valA.localeCompare(valB);
+      } else {
+        // Sort by Avatar Compatibility Status
+        const compA = data?.compatibilities.find(c => c.avatarId === avtKey && c.itemId === a.id);
+        const compB = data?.compatibilities.find(c => c.avatarId === avtKey && c.itemId === b.id);
+        
+        const weightA = STATUS_WEIGHT[(compA?.status || "undefined") as keyof typeof STATUS_WEIGHT];
+        const weightB = STATUS_WEIGHT[(compB?.status || "undefined") as keyof typeof STATUS_WEIGHT];
+        
+        result = weightA - weightB;
+      }
+
+      // Apply direction
+      return direction === "asc" ? result : -result;
+    });
+  }, [filteredItems, data, sortConfig]);
+
+  // Handle Avatar Column Sort
+  const handleAvatarSort = (avatarId: string) => {
+    setSortConfig((prev) => {
+      // Toggle direction if same avatar
+      if (prev.type === "avatar" && prev.avtKey === avatarId) {
+        return { ...prev, direction: prev.direction === "asc" ? "desc" : "asc" };
+      }
+      // Default to desc (Official first) for new avatar
+      return { ...prev, type: "avatar", avtKey: avatarId, direction: "desc" };
+    });
+  };
+
+  // Handle Item Column Sort
+  const handleItemSortKey = (key: string) => {
+    setSortConfig((prev) => ({ ...prev, type: "item", itmKey: key }));
+  };
+  const handleItemDirection = () => {
+    setSortConfig((prev) => ({ ...prev, type: "item", direction: prev.direction === "asc" ? "desc" : "asc" }));
+  };
 
   // Set compatibility status directly (for Edit Mode)
   const setStatus = async (avatarId: string, itemId: string, newStatus: "official" | "modified" | "unsupported") => {
@@ -146,12 +218,12 @@ export default function MatrixPage() {
         description={t('dashboard.matrix.page_description')}
       >
          {/* Header Controls: Mode Switch */}
-         <div className="flex items-center gap-2 bg-vrclo1-100  p-1 rounded-lg border">
+         <div className="flex items-center gap-2 bg-vrclo1-100 p-1 rounded-lg border">
             <Button
               variant={isEditing ? "ghost" : "secondary"}
               size="sm"
               onClick={() => setIsEditing(false)}
-              className={cn("gap-2", !isEditing && "bg-white  shadow-sm")}
+              className={cn("gap-2", !isEditing && "bg-white shadow-sm")}
             >
               <Eye className="h-4 w-4" /> {t('dashboard.matrix.mode_view')}
             </Button>
@@ -159,7 +231,7 @@ export default function MatrixPage() {
               variant={isEditing ? "secondary" : "ghost"}
               size="sm"
               onClick={() => setIsEditing(true)}
-              className={cn("gap-2", isEditing && "bg-white  shadow-sm")}
+              className={cn("gap-2", isEditing && "bg-white shadow-sm")}
             >
               <Pencil className="h-4 w-4" /> {t('dashboard.matrix.mode_edit')}
             </Button>
@@ -174,7 +246,7 @@ export default function MatrixPage() {
             placeholder={t('dashboard.matrix.filter_item')}
             value={itemFilter}
             onChange={(e) => setItemFilter(e.target.value)}
-            className="pl-8 bg-white "
+            className="pl-8 bg-white"
           />
         </div>
         <div className="relative">
@@ -183,31 +255,64 @@ export default function MatrixPage() {
             placeholder={t('dashboard.matrix.filter_avatar')}
             value={avatarFilter}
             onChange={(e) => setAvatarFilter(e.target.value)}
-            className="pl-8 bg-white "
+            className="pl-8 bg-white"
           />
         </div>
       </div>
 
       {/* Matrix Table */}
-      <div className="bg-white  rounded-xl shadow-sm border overflow-visible">
+      <div className="bg-white rounded-xl shadow-sm border overflow-visible">
         <div className="overflow-x-auto max-h-[calc(100vh-300px)]">
           <table className="w-full text-sm text-left border-collapse">
-            {/* Table Header: Avatars */}
-            <thead className="text-xs uppercase bg-vrclo1-100  text-vrclo1-700  sticky top-0 z-30 shadow-sm">
+            {/* Table Header */}
+            <thead className="text-xs uppercase bg-vrclo1-100 text-vrclo1-700 sticky top-0 z-30 shadow-sm">
               <tr>
-                <th className="px-4 py-3 font-medium sticky left-0 bg-vrclo1-100  z-40 border-r  min-w-[200px]">
-                  <div className="flex justify-between items-end">
-                    <span>{t('core.data.item.name')}</span>
+                {/* Item Column Header (Sortable) */}
+                <th className="px-3 py-3 font-medium sticky left-0 bg-vrclo1-100 z-40 border-r min-w-[100px] w-[200px]">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-1">
+                      <span>{t('core.data.item.$')}</span>
+                    </div>
+
+                    {/* Item Sort Controls */}
+                    <div className="flex items-center bg-white/50 rounded-md border border-vrclo1-200">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-6 px-2 text-xs gap-1">
+                            <ListFilter className="h-3 w-3" />
+                            {sortConfig.itmKey === 'category' ? t('core.data.item.category') : t('core.data.item.name')}
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                          <DropdownMenuItem onClick={() => handleItemSortKey('name')}>
+                            {t('core.data.item.name')}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleItemSortKey('category')}>
+                            {t('core.data.item.category')}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      
+                      <div className="w-px h-4 bg-vrclo1-200"></div>
+
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleItemDirection}>
+                        {sortConfig.type === 'item' ? 
+                        (sortConfig.direction === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)
+                        : <ArrowUpDown className="h-3 w-3 text-vrclo1-400" />}
+                      </Button>
+                    </div>
                   </div>
                 </th>
+
+                {/* Avatar Columns Header (Sortable) */}
                 {filteredAvatars.map((avatar) => (
-                  <th key={avatar.id} className="px-2 py-3 font-medium text-center min-w-[120px] border-r  last:border-r-0">
+                  <th key={avatar.id} className="px-2 py-3 font-medium text-center min-w-[100px] border-r last:border-r-0">
                     <div className="flex flex-col items-center gap-2">
                       
                       {/* Avatar Image */}
                       <HoverCard>
                         <HoverCardTrigger asChild>
-                          <Avatar className="h-10 w-10 cursor-pointer border border-vrclo1-200  hover:scale-110 transition-transform">
+                          <Avatar className="h-10 w-10 cursor-pointer border border-vrclo1-200 hover:scale-110 transition-transform">
                             <AvatarImage src={avatar.thumbnailUrl || undefined} className="object-cover" />
                             <AvatarFallback><UserIcon className="h-5 w-5 text-vrclo1-400" /></AvatarFallback>
                           </Avatar>
@@ -217,16 +322,32 @@ export default function MatrixPage() {
                             {avatar.thumbnailUrl ? (
                               <img src={avatar.thumbnailUrl} alt={avatar.name} className="w-48 h-48 object-cover" />
                             ) : (
-                              <div className="w-48 h-48 bg-vrclo1-100  flex items-center justify-center"><UserIcon className="h-12 w-12 text-vrclo1-300" /></div>
+                              <div className="w-48 h-48 bg-vrclo1-100 flex items-center justify-center"><UserIcon className="h-12 w-12 text-vrclo1-300" /></div>
                             )}
                             <div className="absolute bottom-0 w-full bg-black/60 p-2 text-white text-xs text-center truncate">{avatar.name}</div>
                           </div>
                         </HoverCardContent>
                       </HoverCard>
 
-                      <span className="text-xs whitespace-nowrap overflow-hidden text-ellipsis max-w-[110px]">
-                        {avatar.name}
-                      </span>
+                      <div className="flex items-center gap-1 justify-center w-full">
+                        <span className="text-xs whitespace-nowrap overflow-hidden text-ellipsis max-w-[80px]" title={avatar.name}>
+                          {avatar.name}
+                        </span>
+                        {/* Sort Button (Toggle only) */}
+                        <button 
+                          onClick={() => handleAvatarSort(avatar.id)}
+                          className={cn(
+                            "p-0.5 rounded hover:bg-vrclo1-200 transition-colors flex-shrink-0",
+                            sortConfig.type === "avatar" && sortConfig.avtKey === avatar.id && "text-primary bg-vrclo1-200"
+                          )}
+                        >
+                          {sortConfig.type === "avatar" && sortConfig.avtKey === avatar.id ? (
+                            sortConfig.direction === "desc" ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />
+                          ) : (
+                            <ArrowUpDown className="h-3 w-3 text-vrclo1-400" />
+                          )}
+                        </button>
+                      </div>
                     </div>
                   </th>
                 ))}
@@ -235,14 +356,14 @@ export default function MatrixPage() {
 
             {/* Table Body: Items */}
             <tbody>
-              {filteredItems.map((item) => (
-                <tr key={item.id} className="border-b  hover:bg-vrclo1-50 ">
+              {sortedItems.map((item) => (
+                <tr key={item.id} className="border-b hover:bg-vrclo1-50">
                   {/* Row Header: Item */}
-                  <td className="px-4 py-3 font-medium sticky left-0 bg-white  z-20 border-r  shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                  <td className="px-4 py-3 font-medium sticky left-0 bg-white z-20 border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                     <div className="flex items-center gap-3">
                       <HoverCard>
                         <HoverCardTrigger asChild>
-                          <div className="h-10 w-10 rounded-md bg-vrclo1-100  flex-shrink-0 overflow-hidden cursor-pointer border border-vrclo1-200 ">
+                          <div className="h-10 w-10 rounded-md bg-vrclo1-100 flex-shrink-0 overflow-hidden cursor-pointer border border-vrclo1-200">
                             {item.thumbnailUrl ? (
                               <img src={item.thumbnailUrl} alt={item.name} className="h-full w-full object-cover" />
                             ) : (
@@ -255,7 +376,7 @@ export default function MatrixPage() {
                             {item.thumbnailUrl ? (
                               <img src={item.thumbnailUrl} alt={item.name} className="w-48 h-48 object-cover" />
                             ) : (
-                              <div className="w-48 h-48 bg-vrclo1-100  flex items-center justify-center"><ImageIcon className="h-12 w-12 text-vrclo1-300" /></div>
+                              <div className="w-48 h-48 bg-vrclo1-100 flex items-center justify-center"><ImageIcon className="h-12 w-12 text-vrclo1-300" /></div>
                             )}
                             <div className="absolute bottom-0 w-full bg-black/60 p-2 text-white text-xs">
                               <p className="font-bold truncate">{item.name}</p>
@@ -282,59 +403,57 @@ export default function MatrixPage() {
                       <td
                         key={`${avatar.id}-${item.id}`}
                         className={cn(
-                          "px-2 py-3 text-center border-r  last:border-r-0 transition-colors",
-                          !isEditing && "hover:bg-vrclo1-100 "
+                          "px-2 py-3 text-center border-r last:border-r-0 transition-colors",
+                          !isEditing && "hover:bg-vrclo1-100",
+                          // Highlight sorted column
+                          sortConfig.type === "avatar" && sortConfig.avtKey === avatar.id && !isEditing && "bg-vrclo1-50/50"
                         )}
                       >
                         <div className="flex justify-center items-center h-full min-h-[32px]">
                           {/* 👁️ View Mode */}
                           {!isEditing && (
                             <>
-                              {status === "official" && <Badge className="bg-green-600 hover:bg-green-700">{t('dashboard.matrix.status.official')}</Badge>}
-                              {status === "modified" && <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-200">{t('dashboard.matrix.status.modified')}</Badge>}
-                              {status === "unsupported" && <span className="text-vrclo1-200 ">・</span>}
+                              {status === "official" && <Badge className="bg-compatibilitystatus-official text-compatibilitystatus-official-foreground border-compatibilitystatus-official hover:bg-compatibilitystatus-official/80">{t('dashboard.matrix.status.official')}</Badge>}
+                              {status === "modified" && <Badge className="bg-compatibilitystatus-modified text-compatibilitystatus-modified-foreground border-compatibilitystatus-modified hover:bg-compatibilitystatus-modified/80">{t('dashboard.matrix.status.modified')}</Badge>}
+                              {status === "unsupported" && <Badge className="bg-compatibilitystatus-unsupported text-compatibilitystatus-unsupported-foreground border-compatibilitystatus-unsupported hover:bg-compatibilitystatus-unsupported/80">{t('dashboard.matrix.status.unsupported')}</Badge>}
                             </>
                           )}
 
                           {/* ✏️ Edit Mode: 3 Buttons */}
                           {isEditing && (
-                            <div className="flex items-center gap-1 bg-vrclo1-100  p-1 rounded-full">
-                              {/* Official Button */}
+                            <div className="flex items-center gap-1 bg-vrclo1-100 p-1 rounded-full">
                               <button
                                 onClick={() => setStatus(avatar.id, item.id, "official")}
                                 className={cn(
                                   "h-6 w-6 rounded-full flex items-center justify-center transition-all",
-                                  status === "official" 
-                                    ? "bg-green-500 text-white shadow-sm scale-110" 
-                                    : "text-vrclo1-400 hover:bg-green-100 hover:text-green-500"
+                                  status === "official" ? "bg-compatibilitystatus-official text-compatibilitystatus-official-foreground hover:bg-compatibilitystatus-official/80"
+                                  : "text-compatibilitystatus-official hover:bg-compatibilitystatus-official/20 hover:text-compatibilitystatus-official-foreground"
                                 )}
                                 title={t('dashboard.matrix.status.official')}
                               >
                                 <Check className="h-3 w-3" />
                               </button>
 
-                              {/* Modified Button */}
                               <button
                                 onClick={() => setStatus(avatar.id, item.id, "modified")}
                                 className={cn(
                                   "h-6 w-6 rounded-full flex items-center justify-center transition-all",
                                   status === "modified" 
-                                    ? "bg-yellow-400 text-white shadow-sm scale-110" 
-                                    : "text-vrclo1-400 hover:bg-yellow-100 hover:text-yellow-500"
+                                    ? "bg-compatibilitystatus-modified text-compatibilitystatus-modified-foreground hover:bg-compatibilitystatus-modified/80" 
+                                    : "text-compatibilitystatus-modified hover:bg-compatibilitystatus-modified/20 hover:text-compatibilitystatus-modified-foreground"
                                 )}
                                 title={t('dashboard.matrix.status.modified')}
                               >
                                 <AlertCircle className="h-3 w-3" />
                               </button>
 
-                              {/* Unsupported Button */}
                               <button
                                 onClick={() => setStatus(avatar.id, item.id, "unsupported")}
                                 className={cn(
                                   "h-6 w-6 rounded-full flex items-center justify-center transition-all",
                                   status === "unsupported" 
-                                    ? "bg-vrclo1-400 text-white shadow-sm" 
-                                    : "text-vrclo1-300 hover:bg-vrclo1-200 hover:text-vrclo1-500"
+                                    ? "bg-compatibilitystatus-unsupported text-compatibilitystatus-unsupported-foreground hover:bg-compatibilitystatus-unsupported/80" 
+                                    : "text-compatibilitystatus-unsupported hover:bg-compatibilitystatus-unsupported/20 hover:text-compatibilitystatus-unsupported-foreground"
                                 )}
                                 title={t('dashboard.matrix.status.unsupported')}
                               >

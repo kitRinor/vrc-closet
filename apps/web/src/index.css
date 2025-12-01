@@ -50,7 +50,7 @@
     --status-official-foreground: 0 0% 100%;
     --status-modified: 48 96% 53%;
     --status-modified-foreground: 38 92% 30%;
-    --status-unsupported: 240 4.8% 95.9%;
+    --status-unsupported: 240 4.8% 80%;
     --status-unsupported-foreground: 240 3.8% 46.1%;
   }
 
