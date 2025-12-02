@@ -10,6 +10,7 @@ import { Hono } from 'hono';
 import { AppEnv } from '@/type';
 import { profiles } from '@/db/schema/profiles';
 import { MAX_USER_DISPLAY_NAME_LENGTH, MIN_USER_DISPLAY_NAME_LENGTH, USER_HANDLE_REGEX, USER_PASSWORD_REGEX } from '@/const';
+import { getDummyUserAvatarUrl } from '@/lib/dummyImg';
 
 
 const register = new Hono<AppEnv>()
@@ -46,6 +47,7 @@ const register = new Hono<AppEnv>()
       userId: newUser.id,
       handle,
       displayName,
+      avatarUrl: getDummyUserAvatarUrl(newUser.id),
     }).returning();
 
     // 5. Generate JWT and set HttpOnly Cookie

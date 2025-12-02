@@ -3,7 +3,7 @@ import * as jose from 'jose';
 import { v4 as uuidv4 } from 'uuid'; // For random token ID
 
 // 💡 JWT Secretを環境変数から取得
-const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_please_change_this_later';
+const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_jwt_key_for_testing_only';
 const JWT_EXPIRATION_TIME = '30d'; // Token valid for 30 days
 const SALT_ROUNDS = 10; 
 

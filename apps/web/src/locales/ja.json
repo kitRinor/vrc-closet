@@ -113,6 +113,12 @@
     "my_matrix": "対応マトリクス",
     "matrix_description": "アバターと衣装の対応状況を表形式で確認・編集します。",
 
+    "profile": {
+      ".": "プロフィールセクションに関する文言",
+      "edit_profile": "プロフィール編集",
+      "view_profile": "プロフィールを見る"
+    },
+
     "avatars": {
       ".": "アバターページ関連の文言",
       "list": {
@@ -205,6 +211,16 @@
     "no_items": "まだアイテムが追加されていません。",
     "outfit_count": "{{count}} コーデ",
     "no_outfits": "まだコーデが公開されていません。"
+  },
+  
+  "profiles": {
+    ".": "ユーザープロフィールページに関する文言",
+    "title": "プロフィール",
+    "not_found": "ユーザーが見つかりません",
+    "not_found_description": "指定されたユーザーは存在しないか、削除された可能性があります。",
+    "bio_empty": "自己紹介はまだありません。",
+    "users_outfits": "ユーザーのコーデ",
+    "joined_at": "{{date}} に参加"
   },
 
   "not_found": {

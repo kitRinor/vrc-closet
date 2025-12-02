@@ -11,12 +11,14 @@ import { items } from './schema/items';
 import { compatibility } from './schema/compatibility';
 import { outfitItems, outfits } from './schema/outfits';
 import { profiles } from './schema/profiles';
+import { verificationCodes } from './schema/verificationCodes';
 
 // スキーマの定義
 export const schema = {
   ...relations,
   users,
   profiles,
+  verificationCodes,
   avatars,
   items,
   compatibility,

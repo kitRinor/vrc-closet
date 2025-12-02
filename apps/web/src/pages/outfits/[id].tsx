@@ -124,7 +124,22 @@ export default function PublicOutfitDetailPage() {
                     <AvatarImage src={outfit.avatar?.imageUrl || undefined} className="object-cover" />
                     <AvatarFallback className="rounded-md"><UserIcon /></AvatarFallback>
                   </Avatar>
-                  <span className="font-medium">{outfit.avatar?.storeUrl}</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium truncate" title={outfit.avatar?.name}>{outfit.avatar?.name}</p>
+                    <div className="flex justify-between items-center gap-4 mt-1">
+                      <p className="text-xs text-muted-foreground capitalize">Avatar</p>
+                      {outfit.avatar?.storeUrl && (
+                        <a 
+                          href={outfit.avatar.storeUrl} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-1"
+                        >
+                          Store <ExternalLink className="h-3 w-3" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -151,17 +166,19 @@ export default function PublicOutfitDetailPage() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium truncate" title={item.name}>{item.name}</p>
-                        <p className="text-xs text-muted-foreground capitalize">{item.category}</p>
-                        {item.storeUrl && (
-                          <a 
-                            href={item.storeUrl} 
-                            target="_blank" 
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-1"
-                          >
-                            Store <ExternalLink className="h-3 w-3" />
-                          </a>
-                        )}
+                        <div className="flex justify-between items-center gap-4 mt-1">
+                          <p className="text-xs text-muted-foreground capitalize">{item.category}</p>
+                          {item.storeUrl && (
+                            <a 
+                              href={item.storeUrl} 
+                              target="_blank" 
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-1"
+                            >
+                              Store <ExternalLink className="h-3 w-3" />
+                            </a>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))

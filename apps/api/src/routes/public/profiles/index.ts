@@ -3,7 +3,7 @@ import { AppEnv } from '@/type';
 
 import get from './get';
 
-export interface ProfileRes {
+export interface PublicProfileRes {
   userId: string;
   displayName: string | null;
   handle: string;

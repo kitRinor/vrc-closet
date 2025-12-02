@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Shirt } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { authApi, dashboardApi } from "@/lib/api";
+import { authApi } from "@/lib/api";
 
 export function PageLayout({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
@@ -35,18 +35,17 @@ export function PageLayout({ children }: { children: ReactNode }) {
           {/* User Menu */}
           {auth.user && (
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Avatar onClick={async () => {
-                  const res = await authApi.me.$get()
-                  console.log(res);
-                }} className="h-8 w-8">
-                  <AvatarImage src={auth.user.avatarUrl ?? undefined} />
-                  <AvatarFallback>ME</AvatarFallback>
-                </Avatar>
-                <span className="text-sm font-medium hidden sm:block">
-                  {auth.user.displayName}
-                </span>
-              </div>
+              <Link to="/dashboard/profile">
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={auth.user.avatarUrl ?? undefined} />
+                    <AvatarFallback>ME</AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium hidden sm:block">
+                    {auth.user.displayName}
+                  </span>
+                </div>
+              </Link>
               <Button variant="ghost" size="sm" onClick={auth.logout}>
                 {t("auth.logout")}
               </Button>

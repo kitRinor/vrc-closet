@@ -12,7 +12,8 @@ import { MAX_USER_DISPLAY_NAME_LENGTH, MIN_USER_DISPLAY_NAME_LENGTH, USER_HANDLE
 
 const jsonValidator = zValidator('json', z.object({
   handle: z.string().regex(USER_HANDLE_REGEX),
-  displayName: z.string().min(MIN_USER_DISPLAY_NAME_LENGTH).max(MAX_USER_DISPLAY_NAME_LENGTH).optional(),
+  displayName: z.string().min(MIN_USER_DISPLAY_NAME_LENGTH).max(MAX_USER_DISPLAY_NAME_LENGTH).nullable(),
+  bio: z.string().max(160).nullable(),
   avatarUrl: z.string().optional(),
 }).partial());
 

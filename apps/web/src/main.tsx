@@ -5,6 +5,7 @@ import './index.css'
 import './lib/i18n'
 import routes from '~react-pages'
 import { AuthProvider } from './contexts/AuthContext'
+import { Toaster } from './components/ui/sonner'
 
 function AppRoutes() {
   return (
@@ -20,6 +21,7 @@ function App() {
       <AuthProvider>
         <BrowserRouter>
           <AppRoutes />
+          <Toaster />
         </BrowserRouter>
       </AuthProvider>
     </StrictMode>

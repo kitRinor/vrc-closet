@@ -7,7 +7,7 @@ import { schema } from '../src/db';
 config({ path: '../../.env' });
 
 // Constants for random generation
-const N_USER = 5;
+const N_USER = 10;
 const PASSWORD_HASH = '$2b$10$zqzRLPCJqd.f.7masmO1UetcMuDug7urSBADKgHkzP5IQaJkO.5vy'; // Hash for "password"
 // avatar
 const N_AVATAR_PER_USER_MIN = 2;
@@ -30,7 +30,7 @@ const ITEM_NAMES = [
 ];
 // outfit
 const N_OUTFIT_PER_USER_MIN = 1;
-const N_OUTFIT_PER_USER_MAX = 3;
+const N_OUTFIT_PER_USER_MAX = 5;
 const N_ITEM_PER_OUTFIT_MIN = 1;
 const N_ITEM_PER_OUTFIT_MAX = 4;
 const OUTFIT_STYLES = [
@@ -107,7 +107,7 @@ async function main() {
         userId: user.id,
         handle: `usr_${uniqueSuffix}`,
         displayName: `User ${uniqueSuffix}`,
-        avatarUrl: `https://api.dicebear.com/9.x/thumbs/svg?seed=${uniqueSuffix}`,
+        avatarUrl: `https://api.dicebear.com/9.x/thumbs/svg?seed=${user.id}`,
         bio: `Hi! My name is User ${uniqueSuffix}. Welcome to my vrc-closet!`,
       }).returning();
 

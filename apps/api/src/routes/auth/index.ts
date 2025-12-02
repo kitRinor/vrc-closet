@@ -5,6 +5,8 @@ import register from './register';
 import login from './login';
 import me from './me';
 import logout from './logout';
+import updateEmail from './updateEmail';
+import updatePassword from './updatePassword';
 
 export interface AuthUser {
   id: string;
@@ -28,6 +30,8 @@ const app = new Hono<AppEnv>()
   .route('/me', me)
   .route('/register', register)
   .route('/login', login)
-  .route('/logout', logout);
+  .route('/logout', logout)
+  .route('/updateEmail', updateEmail)
+  .route('/updatePassword', updatePassword);
 
 export default app;
