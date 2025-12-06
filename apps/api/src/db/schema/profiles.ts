@@ -5,12 +5,13 @@ import { users } from './users';
 export const profiles = pgTable('profiles', {
   userId: uuid('userId').primaryKey().references(() => users.id, { onDelete: 'cascade' }),
   handle: text('handle').unique().notNull(),
-  displayName: text('display_name'), // may move to userProfiles-table
-  avatarUrl: text('avatar_url'), // may move to userProfiles-table
+  displayName: text('display_name'), 
+  avatarUrl: text('avatar_url'), 
   bio: text('bio'),
-  createdAt: timestamp('created_at').defaultNow(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').$onUpdateFn(() => new Date()),
 }, (t) => [
-  index('user_profiles_handle_index').on(t.handle),
+  index('profiles_handle_index').on(t.handle),
 ]);
 
 export type UserProfile = typeof profiles.$inferSelect;

@@ -20,6 +20,8 @@ export const adminApi = client.admin; // 管理コンソール関連(/_admin)
 export const dashboardApi = client.dashboard; // ダッシュボード関連(/dashboard)
 export const publicApi = client.public; // 公開ページ関連(/*)
 
-export type Avatar = InferResponseType<typeof dashboardApi.avatars[':id']['$get'], 200>; 
-export type Item = InferResponseType<typeof dashboardApi.items[':id']['$get'], 200>;
-export type Outfit = InferResponseType<typeof dashboardApi.outfits[':id']['$get'], 200>;
+export type Asset = InferResponseType<typeof dashboardApi.assets[':id']['$get'], 200>; 
+export type Recipe = InferResponseType<typeof dashboardApi.recipes[':id']['$get'], 200>;
+
+export const assetCategories = ["avatar", "cloth", "hair", "accessory", "texture", "prop", "gimmick", "other"] as const;
+export const recipeStates = ["private", "public", "unlisted"] as const;

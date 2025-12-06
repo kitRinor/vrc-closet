@@ -1,10 +1,12 @@
+import { Asset } from "../api";
 import { fetchBoothItem, isBoothURL } from "./booth";
 
 export type StoreItemInfo = {
   url: string;
   name: string;
+  category: Asset['category'];
   creator: string;
-  thumbnailUrls: {
+  imageUrls: {
     original: string;
     resized?: string;
   }[];

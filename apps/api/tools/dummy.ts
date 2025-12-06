@@ -6,68 +6,73 @@ import { schema } from '../src/db';
 // Load environment variables
 config({ path: '../../.env' });
 
-// Constants for random generation
-const N_USER = 10;
+// ---------------------------------------------------------
+// Configuration Constants
+// ---------------------------------------------------------
+
+const N_USER = 5; // Number of users to generate
 const PASSWORD_HASH = '$2b$10$zqzRLPCJqd.f.7masmO1UetcMuDug7urSBADKgHkzP5IQaJkO.5vy'; // Hash for "password"
-// avatar
-const N_AVATAR_PER_USER_MIN = 2;
-const N_AVATAR_PER_USER_MAX = 5; // less than AVATAR_NAMES.length
+
+// Assets Configuration
+const N_ASSET_PER_USER_MIN = 5;
+const N_ASSET_PER_USER_MAX = 12;
+
 const AVATAR_NAMES = [
-  'Chiffon', 'Chocolat',  'Lime', 'Rusk', 
-  'Manuka', 'Rurune', 'Selestia', 'Maya', 'Moe'
+  'Chiffon', 'Chocolat', 'Lime', 'Rusk', 
+  'Manuka', 'Rurune', 'Selestia', 'Maya', 'Moe', 'Kikyo', 'Grus'
 ];
-// item
-const N_ITEM_PER_USER_MIN = 5;
-const N_ITEM_PER_USER_MAX = 10; // less than ITEM_NAMES.length
+
 const ITEM_NAMES = [
-  'Summer Dress', 'Summer Bikini', 
-  'Winter Dress', 'Winter Coat', 
-  'Gothic Dress',
-  'Cyber Jacket', 'Cyber Pants',
-  'Sailor Uniform',
-  'Maid Dress',
-  'Casual Shirt', 'Casual Jeans',
-];
-// outfit
-const N_OUTFIT_PER_USER_MIN = 1;
-const N_OUTFIT_PER_USER_MAX = 5;
-const N_ITEM_PER_OUTFIT_MIN = 1;
-const N_ITEM_PER_OUTFIT_MAX = 4;
-const OUTFIT_STYLES = [
-  'Casual', 'Formal', 'Sporty', 'Gothic', 'Cyberpunk', 'Vintage', 'Bohemian'
-];
-const OUTFIT_DESCRIPTIONS = [
-  'A stylish outfit perfect for any occasion. Includes a mix of casual and formal elements.',
-  'Comfortable and trendy look for everyday wear. With a touch of elegance.',
-  'An elegant ensemble for special events.',
-  'A bold and edgy style for the fashion-forward. And a hint of rebellion.',
-  'A classic look with a modern twist. And timeless appeal.',
-  'A vibrant and colorful outfit to brighten your day.',
-  'A chic and sophisticated style for the urban explorer. And a touch of mystery.'
-];
-// compatibility
-const COMPATIBILITY_NOTES = [
-  'Requires bone adjustment', 
-  'May cause clipping with certain avatars', 
-  'Optimized for VRChat', 
-  'High polycount, may affect performance'
+  'Summer Dress', 'Summer Bikini', 'Winter Coat', 'Gothic Dress',
+  'Cyber Jacket', 'Cyber Pants', 'Sailor Uniform', 'Maid Dress',
+  'Casual Shirt', 'Casual Jeans', 'Techwear Set', 'Bunny Suit',
+  'Cat Ears', 'Halo', 'Wings', 'Glasses', 'Mask',
+  'Long Hair', 'Short Bob', 'Twin Tails', 'Ponytail'
 ];
 
-// Possible categories and statuses
-const CATEGORIES = ['cloth', 'hair', 'accessory', 'texture', 'prop', 'gimmick', 'other'] as const;
-const STATUSES = ['official', 'modified', 'unsupported'] as const;
-const OUTFIT_STATES = ['private', 'public', 'unlisted'] as const;
+const ASSET_CATEGORIES = ['avatar', 'cloth', 'hair', 'accessory', 'texture', 'prop', 'gimmick', 'other'] as const;
+
+// Recipes Configuration
+const N_RECIPE_PER_USER_MIN = 1;
+const N_RECIPE_PER_USER_MAX = 4;
+
+const RECIPE_TITLES = [
+  'Summer Vibe', 'Winter Cozy', 'Cyberpunk Style', 'Gothic Lolita', 
+  'Casual Daily', 'Sleepwear', 'Combat Ready', 'Party Look'
+];
+
+const RECIPE_DESCRIPTIONS = [
+  'A cute setup for summer events.',
+  'Warm and cozy outfit for winter.',
+  'Cool cyber style with glowing textures.',
+  'Classic gothic look.',
+  'Simple and comfortable for daily use.',
+  'Optimized for heavy instances.'
+];
+
+const RECIPE_STATES = ['private', 'public', 'unlisted'] as const;
 
 
+// ---------------------------------------------------------
+// Helper Functions
+// ---------------------------------------------------------
 
-// Helper functions
-const getRandomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
-const getRandomString = (length: number) => Math.random().toString(36).substring(2, 2 + length);
-const getRandomElement = <T>(arr: readonly T[]): T => arr[Math.floor(Math.random() * arr.length)];
-const getRandomElements = <T>(arr: readonly T[], n: number): T[] => [...arr].sort(() => 0.5 - Math.random()).slice(0, n);
-
-const generateSource = (name: string) => {
-  const itemKey = name.replace(/\s+/g, '_').toLowerCase()
+const getRandomInt = (min: number, max: number) => 
+  Math.floor(Math.random() * (max - min + 1)) + min;
+const getRandomString = (length: number) => 
+  Math.random().toString(36).substring(2, 2 + length);
+const getRandomElement = <T>(arr: readonly T[]): T => 
+  arr[Math.floor(Math.random() * arr.length)];
+const getRandomElements = <T>(arr: readonly T[], n: number): T[] => 
+  [...arr].sort(() => 0.5 - Math.random()).slice(0, n);
+const generateRandomString = (length: number) => 
+  Math.random().toString(36).substring(2, 2 + length);
+const getAvatarUrl = (seed: string) => 
+  `https://api.dicebear.com/9.x/thumb/svg?seed=${seed}`;
+const getImageUrl = (text: string) => 
+  `https://placehold.co/600x400?text=${text}`;
+const generateSource = (key: string) => {
+  const itemKey = key.replace(/\s+/g, '_').toLowerCase()
   return {
     platform: 'example.com',
     itemKey: itemKey,
@@ -76,142 +81,139 @@ const generateSource = (name: string) => {
 };
 
 
-// **  Main functions **
+// ---------------------------------------------------------
+// Main Script
+// ---------------------------------------------------------
 
-
-// DB connection
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
   throw new Error('DATABASE_URL is not set');
 }
+
 const client = postgres(connectionString);
 const db = drizzle(client, { schema });
 
 async function main() {
-  console.log('🌱 Starting dummy data injection...');
+  console.log('🌱 Starting dummy data injection (Append Mode)...');
 
   try {
-    // 1. Create Users
     const createdUserIds: string[] = [];
 
+    // 1. Create Users & Profiles
     console.log(`Creating ${N_USER} users...`);
 
     for (let i = 0; i < N_USER; i++) {
-      const uniqueSuffix = getRandomString(8);
+      const uniqueSuffix = generateRandomString(10);
       
       const [user] = await db.insert(schema.users).values({
-        email: `usr_${uniqueSuffix}@example.com`,
+        email: `user_${uniqueSuffix}@example.com`,
         password: PASSWORD_HASH,
       }).returning();
-      const [profile] = await db.insert(schema.profiles).values({
+
+      await db.insert(schema.profiles).values({
         userId: user.id,
-        handle: `usr_${uniqueSuffix}`,
+        handle: uniqueSuffix,
         displayName: `User ${uniqueSuffix}`,
-        avatarUrl: `https://api.dicebear.com/9.x/thumbs/svg?seed=${user.id}`,
-        bio: `Hi! My name is User ${uniqueSuffix}. Welcome to my vrc-closet!`,
-      }).returning();
+        avatarUrl: getAvatarUrl(user.id),
+        bio: `Hello! I am a dummy user generated at ${new Date().toISOString()}.`,
+      });
 
       createdUserIds.push(user.id);
     }
 
-    // Loop through each new user to create their assets
+    // 2. Generate Assets & Recipes for each user
     for (const userId of createdUserIds) {
-      console.log(`  Generating assets for user ${userId}...`);
+      // 2-1. Generate Assets
+      const assetCount = getRandomInt(N_ASSET_PER_USER_MIN, N_ASSET_PER_USER_MAX);
+      const userAssets: { id: string, category: string, name: string }[] = [];
 
-      // 2. Create Avatars 
-      const avatarCount = getRandomInt(N_AVATAR_PER_USER_MIN, N_AVATAR_PER_USER_MAX);
-      const userAvatars: { id: string, name: string }[] = [];
-      const avatarNames = getRandomElements(AVATAR_NAMES, avatarCount);
-
-      for (let i = 0; i < avatarCount; i++) {
-        const name = avatarNames[i];
-        const { platform, itemKey, sourceKey } = generateSource(name);
-        
-        const [avatar] = await db.insert(schema.avatars).values({
-          userId,
-          name: `${name}`,
-          storeUrl: `https://${platform}/items/${itemKey}`,
-          sourceKey: sourceKey,
-          thumbnailUrl: `https://placehold.co/1024x1024?text=${name}`,
-        }).returning();
-        
-        userAvatars.push(avatar);
-      }
-
-      // 3. Create Items 
-      const itemCount = getRandomInt(N_ITEM_PER_USER_MIN, N_ITEM_PER_USER_MAX);
-      const userItems: { id: string, name: string }[] = [];
-      const itemNames = getRandomElements(ITEM_NAMES, itemCount);
-
-      for (let i = 0; i < itemCount; i++) {
-        const category = getRandomElement(CATEGORIES);
-        const { platform, itemKey, sourceKey } = generateSource(itemNames[i]);
-        
-        const [item] = await db.insert(schema.items).values({
-          userId,
-          name: itemNames[i],
-          category: category,
-          storeUrl: `https://${platform}/items/${itemKey}`,
-          sourceKey: sourceKey,
-          thumbnailUrl: `https://placehold.co/1024x1024?text=${itemNames[i]}`,
-        }).returning();
-
-        userItems.push(item);
-      }
-
-      // 4. Create Compatibility Matrix
-      // Create random compatibility records for user's avatars and items
-      const compatibilityData = [];
-      for (const avatar of userAvatars) {
-        for (const item of userItems) {
-          // 70% chance to have a compatibility record
-          if (Math.random() > 0.3) {
-            compatibilityData.push({
-              userId,
-              avatarId: avatar.id,
-              itemId: item.id,
-              status: getRandomElement(STATUSES),
-              note: Math.random() > 0.7 ? getRandomElement(COMPATIBILITY_NOTES) : null,
-            });
-          }
+      // Ensure at least one avatar is created for recipes
+      const ensureAvatar = true; 
+      const sourceKeysSet = new Set<string>();
+      for (let j = 0; j < assetCount; j++) {
+        let category = ensureAvatar && j === 0 
+          ? 'avatar' : getRandomElement(ASSET_CATEGORIES);
+        let name = category === 'avatar' 
+          ? getRandomElement(AVATAR_NAMES) : getRandomElement(ITEM_NAMES);
+        const source = generateSource(`${category}@${name}`);
+        if (sourceKeysSet.has(source.sourceKey)) {
+          j--; // Retry if duplicate
+          continue;
         }
-      }
-      if (compatibilityData.length > 0) {
-        await db.insert(schema.compatibility).values(compatibilityData);
-      }
+        sourceKeysSet.add(source.sourceKey);
 
-      // 5. Create Outfits
-      const outfitCount = getRandomInt(N_OUTFIT_PER_USER_MIN, N_OUTFIT_PER_USER_MAX);
-      for (let i = 0; i < outfitCount; i++) {
-        const baseAvatar = getRandomElement(userAvatars);
-        
-        // Pick 1-4 random items
-        const outfitItemCount = getRandomInt(N_ITEM_PER_OUTFIT_MIN, N_ITEM_PER_OUTFIT_MAX);
-        const selectedItems = getRandomElements(userItems, outfitItemCount);
-
-        // Create Outfit
-        const [outfit] = await db.insert(schema.outfits).values({
+        const [asset] = await db.insert(schema.assets).values({
           userId,
-          avatarId: baseAvatar.id,
-          name: `${baseAvatar.name} - ${getRandomElement(OUTFIT_STYLES)} Style`,
-          description: getRandomElement(OUTFIT_DESCRIPTIONS),
-          state: getRandomElement(OUTFIT_STATES),
-          imageUrl: `https://placehold.co/1920x1080?text=Outfit`,
+          name: `${name} ${generateRandomString(3).toUpperCase()}`,
+          category: category,
+          storeUrl: `https://${source.platform}/items/${source.itemKey}`,
+          sourceKey: source.sourceKey,
+          imageUrl: getImageUrl(`${name}`),
+          createdAt: new Date(),
         }).returning();
 
-        // Link Items to Outfit
-        if (selectedItems.length > 0) {
-          await db.insert(schema.outfitItems).values(
-            selectedItems.map(item => ({
-              outfitId: outfit.id,
-              itemId: item.id,
+        userAssets.push(asset);
+      }
+
+      // Filter assets for recipe generation
+      const myAvatars = userAssets.filter(a => a.category === 'avatar');
+      const myItems = userAssets.filter(a => a.category !== 'avatar');
+
+      if (myAvatars.length === 0) continue; // Skip recipe generation if no avatar
+
+      // 2-2. Generate Recipes
+      const recipeCount = getRandomInt(N_RECIPE_PER_USER_MIN, N_RECIPE_PER_USER_MAX);
+
+      for (let k = 0; k < recipeCount; k++) {
+        const baseAvatar = getRandomElement(myAvatars);
+        const title = getRandomElement(RECIPE_TITLES);
+
+        // Create Recipe
+        const [recipe] = await db.insert(schema.recipes).values({
+          userId,
+          baseAssetId: baseAvatar.id,
+          name: `${baseAvatar.name} - ${title}`,
+          description: getRandomElement(RECIPE_DESCRIPTIONS),
+          imageUrl: getImageUrl(`${baseAvatar.name} - ${title}`), // Use avatar image style for recipe thumb
+          state: getRandomElement(RECIPE_STATES),
+          createdAt: new Date(),
+        }).returning();
+
+        // Add Recipe Assets (Ingredients)
+        // Pick 1-5 random items to attach
+        const ingredients = getRandomElements(myItems, getRandomInt(1, 5));
+        
+        if (ingredients.length > 0) {
+          await db.insert(schema.recipeAssets).values(
+            ingredients.map(item => ({
+              recipeId: recipe.id,
+              assetId: item.id,
+              note: 'Auto generated note.',
+              // Dummy configuration JSON
+              configuration: { 
+                scale: 1.0, 
+                parentBone: "Hips", 
+                tool: "ModularAvatar" 
+              },
             }))
           );
+        }
+
+        // Add Recipe Steps
+        const stepCount = getRandomInt(2, 5);
+        for (let s = 1; s <= stepCount; s++) {
+          await db.insert(schema.recipeSteps).values({
+            recipeId: recipe.id,
+            stepNumber: s,
+            name: `Step ${s}`,
+            description: `This is the instruction for step ${s}. Configure the components carefully.`,
+            imageUrl: getImageUrl(`Step ${s}`),
+          });
         }
       }
     }
 
-    console.log('✅ Dummy data injection completed!');
+    console.log(`✅ Successfully injected ${N_USER} users and their data!`);
     process.exit(0);
 
   } catch (e) {

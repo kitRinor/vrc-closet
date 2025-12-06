@@ -49,23 +49,37 @@
         "$": "ユーザー",
         "name": "ユーザー名"
       },
-      "avatar": {
-        "$": "アバター",
-        "name": "アバター名",
-        "store_url": "ストアURL",
-        "thumbnail_url": "サムネイルURL"
-      },
-      "item": {
-        "$": "アイテム",
-        "name": "アイテム名",
+      "asset": {
+        "$": "アセット",
+        "name": "アセット名",
+        "description": "説明",
         "category": "カテゴリー",
         "store_url": "ストアURL",
-        "thumbnail_url": "サムネイルURL"
+        "image_url": "画像URL",
+        
+        "_categories": {
+          "avatar": "アバター",
+          "cloth": "衣装",
+          "hair": "髪型",
+          "accessory": "アクセサリー",
+          "texture": "テクスチャ",
+          "prop": "小道具",
+          "gimmick": "ギミック",
+          "other": "その他"
+        }
       },
-      "outfit": {
-        "$": "コーデ",
-        "name": "コーデ名",
-        "base_avatar": "ベースアバター"
+      "recipe": {
+        "$": "レシピ",
+        "name": "レシピ名",
+        "description": "説明",
+        "state": "ステータス",
+        "store_url": "ストアURL",
+        "image_url": "画像URL",
+        "_states": {
+          "private": "非公開",
+          "public": "公開",
+          "unlisted": "限定公開"
+        }
       }
     }
   },
@@ -96,22 +110,18 @@
     ".": "ダッシュボードページに関する文言",
     "welcome": "ようこそ、{{name}}さん",
     "open_store": "ストアを開く",
-    "my_avatars": "マイアバター",
-    "my_avatars_description": "所持しているアバターの一覧を管理します。",
-    "my_avatars_empty": "まだアバターが登録されていません。まずはアバターを追加しましょう！",
-    "add_avatar_dialog_title": "アバター追加",
-    "add_avatar_dialog_description": "新しいアバターを追加します。",
-    "my_items": "マイアイテム",
-    "my_items_description": "所持しているアイテムの一覧を管理します。",
-    "my_items_empty": "まだアイテムが登録されていません。まずはアイテムを追加しましょう！",
-    "add_item_dialog_title": "アイテム追加",
-    "add_item_dialog_description": "新しい衣装アイテムを追加します。",
-    "my_outfits": "マイコーデ",
-    "my_outfits_description": "自分用に作成したアバター改変やコーデの組み合わせを管理します。",
-    "community_outfit": "みんなのコーデ",
-    "community_outfit_description": "他のユーザーが公開したアバター改変やコーデの組み合わせを見れるようになります。",
-    "my_matrix": "対応マトリクス",
-    "matrix_description": "アバターと衣装の対応状況を表形式で確認・編集します。",
+    "my_assets": "マイアセット",
+    "my_assets_description": "所持しているアセットの一覧を管理します。",
+    "my_assets_empty": "まだアセットが登録されていません。まずはアセットを追加しましょう！",
+    "add_asset_dialog_title": "アセット追加",
+    "add_asset_dialog_description": "新しいアセットを追加します。",
+    "my_recipes": "マイレシピ",
+    "my_recipes_description": "自分用に作成した改変レシピの組み合わせを管理します。",
+    "my_recipes_empty": "まだレシピが登録されていません。まずはレシピを追加しましょう！",
+    "add_recipe_dialog_title": "レシピ追加",
+    "add_recipe_dialog_description": "新しいレシピを追加します。",
+    "community_recipe": "みんなのレシピ",
+    "community_recipe_description": "他のユーザーが公開したアバター改変の組み合わせを見れるようになります。",
 
     "profile": {
       ".": "プロフィールセクションに関する文言",
@@ -119,38 +129,7 @@
       "view_profile": "プロフィールを見る"
     },
 
-    "avatars": {
-      ".": "アバターページ関連の文言",
-      "list": {
-        "page_title": "マイアバター一覧",
-        "page_description": "登録されているアバターの一覧",
-        "add_avatar": "アバター追加",
-        "add_avatar_description": "新しいアバターを追加します。",
-        "avatar_count": "{{count}} アバター",
-        "no_avatars": "まだアバターが登録されていません。まずはアバターを追加しましょう！"
-      },
-      "detail": {
-        "page_title": "アバター詳細",
-        "page_description": "アバターの詳細情報と関連コーデ一覧",
-        "store_link": "ストアで見る",
-        "used_in_coordinations": "このアバターを含むコーデ",
-        "no_used_in_coordinations": "このアバターを使用した公開されたコーデはまだありません。"
-      },
-      "edit": {
-        "page_title": "アバター編集",
-        "page_description": "アバターの情報の編集",
-        "store_url_help": "BOOTHの商品URLを入力して右のボタンを押すと、名前と画像を自動取得します。",
-        "auto_fill_tooltip": "URLから情報を自動取得",
-        "apply_name_tooltip": "ストアの情報から名前を適用",
-        "fetch_success": "アバター情報を取得しました",
-        "fetch_failed": "情報の取得に失敗しました。URLを確認してください。",
-        "update_success": "更新しました",
-        "update_failed": "更新に失敗しました",
-        "delete_success": "削除しました",
-        "delete_failed": "削除できませんでした"
-      }
-    },
-    "items": {
+    "assets": {
       ".": "アイテムページ関連の文言",
       "list": {
         "page_title": "マイアイテム一覧",
@@ -180,46 +159,16 @@
         "delete_success": "削除しました",
         "delete_failed": "削除できませんでした"
       }
-    },
-    "matrix": {
-      ".": "対応マトリクスページ関連の文言",
-      "page_title": "対応マトリクス",
-      "page_description": "アバターとアイテムの対応を一覧管理できます",
-      "fetch_success": "マトリクス情報を取得しました",
-      "fetch_failed": "情報の取得に失敗しました。URLを確認してください。",
-      "update_success": "更新しました",
-      "update_failed": "更新に失敗しました",
-      "mode_view": "閲覧モード",
-      "mode_edit": "編集モード",
-      "filter_avatar": "アバター絞り込み...",
-      "filter_item": "アイテム絞り込み...",
-      "status": {
-        "official": "公式",
-        "modified": "改変",
-        "unsupported": "非対応"
-      }
     }
   },
 
-  "outfits": {
-    ".": "コーディネートページに関する文言",
-    "title": "コーデ一覧",
-    "description": "ユーザーが公開したコーディネートの一覧を閲覧できます。",
-    "creator": "作成者",
-    "base_avatar": "ベースアバター",
-    "items_used": "使用アイテム: {{count}}",
-    "no_items": "まだアイテムが追加されていません。",
-    "outfit_count": "{{count}} コーデ",
-    "no_outfits": "まだコーデが公開されていません。"
-  },
-  
   "profiles": {
     ".": "ユーザープロフィールページに関する文言",
     "title": "プロフィール",
     "not_found": "ユーザーが見つかりません",
     "not_found_description": "指定されたユーザーは存在しないか、削除された可能性があります。",
     "bio_empty": "自己紹介はまだありません。",
-    "users_outfits": "ユーザーのコーデ",
+    "users_recipes": "みんなのコーデ",
     "joined_at": "{{date}} に参加"
   },
 

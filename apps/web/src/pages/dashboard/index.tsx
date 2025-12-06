@@ -9,9 +9,8 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { UserIcon, EllipsisIcon, ShirtIcon, Grid3X3Icon, PlusIcon } from "lucide-react";
 import { PageLayout } from "@/components/common/PageLayout";
 import { useTranslation } from "react-i18next";
-import type { Avatar, Item } from "@/lib/api";
-import { AvatarAddDialog } from "@/components/features/avatars/AvatarAddDialog";
-import { ItemAddDialog } from "@/components/features/items/ItemAddDialog";
+import type { Asset, Recipe } from "@/lib/api";
+import { AssetAddDialog } from "@/components/features/asset/AssetAddDialog";
 
 const MAX_VISIBLE = 10;
 
@@ -20,96 +19,65 @@ export default function HomePage() {
   const auth = useAuth();
   const navigate = useNavigate();
   
-  const [avatars, setAvatars] = useState<Avatar[]>([]);
-  const [items, setItems] = useState<Item[]>([]);
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [assets, setAssets] = useState<Asset[]>([]);
   const [openNewAvatar, setOpenNewAvatar] = useState(false);
   const [openNewItem, setOpenNewItem] = useState(false);
 
   useEffect(() => {
     if (auth.user) {
-      fetchAvatars();
-      fetchItems();
+      fetchAssets();
+      fetchRecipes();
     }
   }, [auth.user]);
 
   // 一覧取得
-  const fetchAvatars = async () => {
-    const res = await dashboardApi.avatars.$get({
+  const fetchAssets = async () => {
+    const res = await dashboardApi.assets.$get({
       query: { 
         limit: MAX_VISIBLE+1,
         order: 'desc',
         sort: 'createdAt',
       }
     });
-    if (res.ok) setAvatars(await res.json());
+    if (res.ok) setAssets(await res.json());
   };
-  const fetchItems = async () => {
-    const res = await dashboardApi.items.$get({
+  const fetchRecipes = async () => {
+    const res = await dashboardApi.recipes.$get({
       query:{
-        limit: '16',
+        limit: MAX_VISIBLE+1,
         order: 'desc',
         sort: 'createdAt',
       }
     });
-    if (res.ok) setItems(await res.json());
+    if (res.ok) setRecipes(await res.json());
   };
 
   return (
     <PageLayout>
       <div className="gap-8 flex flex-col">
-        {/* --- クイックアクセス --- */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Link to="matrix">
-            <Card className="hover:bg-vrclo1-50  transition-colors cursor-pointer h-full border-2 border-transparent hover:border-vrclo1-200 ">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-lg font-bold text-vrclo1-700">{t("dashboard.my_matrix")}</CardTitle>
-                <Grid3X3Icon className="h-5 w-5 text-vrclo1-500" />
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-vrclo1-500">
-                  {t("dashboard.matrix_description")}
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          {/* public outfits */}
-          <Link to="/outfits"> 
-            <Card className="bg-blue-50 hover:bg-blue-100  transition-colors cursor-pointer h-full border-2 border-transparent hover:border-blue-200 ">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-bold text-blue-700 ">{t("dashboard.community_outfit")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-blue-600/80 ">
-                  {t("dashboard.community_outfit_description")}
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-        </section>
-
         {/* --- 所持アバター --- */}
         <section>
           <MyAssetList
-            t_mode="avatar"
-            data={avatars}
+            t_mode="recipe"
+            data={recipes}
             isDialogOpen={openNewAvatar}
             setIsDialogOpen={setOpenNewAvatar}
-            onClickTitle={() => navigate("avatars")}
-            onClickItem={(item) => navigate(`avatars/${item.id}`)}
-            onSuccess={fetchAvatars}
+            onClickTitle={() => navigate("recipes")}
+            onClickItem={(item) => navigate(`recipes/${item.id}`)}
+            onSuccess={fetchAssets}
           />
         </section>
         {/* --- 所持アイテム --- */}
         <section>
           <MyAssetList
-            t_mode="item"
-            data={items}
+            t_mode="asset"
+            data={assets}
             isDialogOpen={openNewItem}
             setIsDialogOpen={setOpenNewItem}
-            onClickTitle={() => navigate("items")}
-            onClickItem={(item) => navigate(`items/${item.id}`)}
-            onSuccess={fetchItems}
+            onClickTitle={() => navigate("assets")}
+            onClickItem={(item) => navigate(`assets/${item.id}`)}
+            onSuccess={fetchRecipes}
           />
         </section>
       </div>
@@ -117,8 +85,8 @@ export default function HomePage() {
   );
 }
 
-const MyAssetList = <T extends Avatar | Item>(props:{
-  t_mode?: 'avatar' | 'item'; 
+const MyAssetList = <T extends Asset | Recipe>(props:{
+  t_mode?: 'asset' | 'recipe'; 
   data: T[];
   isDialogOpen: boolean;
   maxVisible?: number
@@ -132,19 +100,19 @@ const MyAssetList = <T extends Avatar | Item>(props:{
 
   const maxVisible = props.maxVisible ?? 10;
 
-  const Icon = props.t_mode === 'item' ? ShirtIcon : UserIcon;
+  const Icon = props.t_mode === 'recipe' ? ShirtIcon : UserIcon;
   const trans = {
-    title: props.t_mode === 'item' ? t("dashboard.my_items") : t("dashboard.my_avatars"),
-    addDialogTitle: props.t_mode === 'item' ? t("dashboard.add_item_dialog_title") : t("dashboard.add_avatar_dialog_title"),
-    addDialogDescription: props.t_mode === 'item' ? t("dashboard.add_item_dialog_description") : t("dashboard.add_avatar_dialog_description"),
-    emptyMessage: props.t_mode === 'item' ? t("dashboard.my_items_empty") : t("dashboard.my_avatars_empty"),
+    title: props.t_mode === 'recipe' ? t("dashboard.my_recipes") : t("dashboard.my_assets"),
+    addDialogTitle: props.t_mode === 'recipe' ? t("dashboard.add_recipe_dialog_title") : t("dashboard.add_asset_dialog_title"),
+    addDialogDescription: props.t_mode === 'recipe' ? t("dashboard.add_recipe_dialog_description") : t("dashboard.add_asset_dialog_description"),
+    emptyMessage: props.t_mode === 'recipe' ? t("dashboard.my_recipes_empty") : t("dashboard.my_assets_empty"),
 
-    nameField: props.t_mode === 'item' ? t("core.data.item.name") : t("core.data.avatar.name"),
-    storeUrlField: props.t_mode === 'item' ? t("core.data.item.store_url") : t("core.data.avatar.store_url"),
-    thumbnailUrlField: props.t_mode === 'item' ? t("core.data.item.thumbnail_url") : t("core.data.avatar.thumbnail_url"),
+    nameField: props.t_mode === 'asset' ? t("core.data.asset.name") : t("core.data.recipe.name"),
+    storeUrlField: props.t_mode === 'asset' ? t("core.data.asset.store_url") : t("core.data.recipe.store_url"),
+    thumbnailUrlField: props.t_mode === 'asset' ? t("core.data.asset.image_url") : t("core.data.recipe.image_url"),
   }
   const DialogComponent = useMemo(() => 
-    props.t_mode === 'item' ? ItemAddDialog : AvatarAddDialog,
+    props.t_mode === 'recipe' ? (..._: any[]) => null : AssetAddDialog,
   [props.t_mode]);
 
   return (
@@ -172,8 +140,8 @@ const MyAssetList = <T extends Avatar | Item>(props:{
             className="min-w-[33%] w-[33%] md:min-w-[25%] md:w-[25%] lg:min-w-[20%] lg:w-[20%] hover:bg-vrclo1-50  transition-colors h-full border-2 border-transparent hover:border-vrclo1-200  overflow-hidden cursor-pointer"
           >
             <div className="aspect-square bg-vrclo1-100  flex items-center justify-center text-vrclo1-300">
-              {item.thumbnailUrl ? (
-                <img src={item.thumbnailUrl} alt={item.name} className="object-cover w-full h-full" />
+              {item.imageUrl ? (
+                <img src={item.imageUrl} alt={item.name} className="object-cover w-full h-full" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <UserIcon className="h-12 w-12" />

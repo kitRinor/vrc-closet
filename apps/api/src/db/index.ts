@@ -5,13 +5,11 @@ import {config} from 'dotenv';
 config();
 
 import * as relations from './schema/_relations';
-import { avatars } from './schema/avatars';
 import { users } from './schema/users';
-import { items } from './schema/items';
-import { compatibility } from './schema/compatibility';
-import { outfitItems, outfits } from './schema/outfits';
+import { assets } from './schema/assets';
 import { profiles } from './schema/profiles';
 import { verificationCodes } from './schema/verificationCodes';
+import { recipeAssets, recipes, recipeSteps } from './schema/recipes';
 
 // スキーマの定義
 export const schema = {
@@ -19,11 +17,10 @@ export const schema = {
   users,
   profiles,
   verificationCodes,
-  avatars,
-  items,
-  compatibility,
-  outfits,
-  outfitItems,
+  assets,
+  recipes,
+  recipeSteps,
+  recipeAssets,
 };
 
 const connectionString = process.env.DATABASE_URL;

@@ -57,9 +57,10 @@ export const fetchBoothItem = async (inputUrl: string): Promise<StoreItemInfo | 
     return {
       url: data.url,
       name: data.name,
+      category: 'other',
       creator: data.shop?.name || 'Unknown',
       // images[0] がメイン画像。original を使うか resized を使うかは用途次第ですが、
-      thumbnailUrls: data.images?.map(img => ({ original: img.original, resized: img.resized })) || [],
+      imageUrls: data.images?.map(img => ({ original: img.original, resized: img.resized })) || [],
       // "¥ 3,000" -> 3000 に変換
       price: parsePrice(data.price),
       description: data.description || '',

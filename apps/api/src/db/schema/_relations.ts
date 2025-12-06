@@ -1,10 +1,8 @@
 import { relations } from 'drizzle-orm';
 import { users } from './users';
-import { avatars } from './avatars';
-import { items } from './items';
-import { compatibility } from './compatibility';
-import { outfitItems, outfits } from './outfits';
+import { assets } from './assets';
 import { profiles } from './profiles';
+import { recipeAssets, recipes, recipeSteps } from './recipes';
 
 
 // テーブル間のリレーション設定
@@ -12,40 +10,34 @@ import { profiles } from './profiles';
 // users table relations 
 export const usersRelations = relations(users, ({ one, many }) => ({
   profile: one(profiles, { fields: [users.id], references: [profiles.userId] }), // 1-user : 1-profile
-  avatars: many(avatars), // 1-user : n-avatars
-  items: many(items), // 1-user : n-items
+  assets: many(assets), // 1-user : n-assets
+  recipes: many(recipes), // 1-user : n-recipes
 }));
 // profiles table relations
 export const profilesRelations = relations(profiles, ({ one }) => ({
   user: one(users, { fields: [profiles.userId], references: [users.id] }),
 }));
-// avatars table relations
-export const avatarsRelations = relations(avatars, ({ one, many }) => ({
-  user: one(users, { fields: [avatars.userId], references: [users.id] }),
-  compatibilities: many(compatibility), // 1-avatar : n-compatibilities
+
+// assets table relations
+export const assetsRelations = relations(assets, ({ one, many }) => ({
+  user: one(users, { fields: [assets.userId], references: [users.id] }),
+  recipeAssets: many(recipeAssets), // 1-asset : n-recipeAssets
+  recipesAsBaseAsset: many(recipes), // 1-asset : n-recipes as baseAsset
 }));
 
-// items table relations
-export const itemsRelations = relations(items, ({ one, many }) => ({
-  user: one(users, { fields: [items.userId], references: [users.id] }),
-  compatibilities: many(compatibility), // 1-item : n-compatibilities
+// recipes table relations
+export const recipesRelations = relations(recipes, ({ one, many }) => ({
+  user: one(users, { fields: [recipes.userId], references: [users.id] }),
+  recipeSteps: many(recipeSteps), // 1-recipe : n-steps
+  recipeAssets: many(recipeAssets), // 1-recipe : n-assets
+  assetsAsBase: one(assets, { fields: [recipes.baseAssetId], references: [assets.id]  }), // recipe's base asset
 }));
-
-// compatibilities table relations
-export const compatibilityRelations = relations(compatibility, ({ one }) => ({
-  user: one(users, { fields: [compatibility.userId], references: [users.id] }),
-  avatar: one(avatars, { fields: [compatibility.avatarId], references: [avatars.id] }),
-  item: one(items, {fields: [compatibility.itemId], references: [items.id] }),
+// recipeSteps table relations
+export const recipeStepsRelations = relations(recipeSteps, ({ one }) => ({
+  recipe: one(recipes, { fields: [recipeSteps.recipeId], references: [recipes.id] }),
 }));
-
-// outfits table relations
-export const outfitsRelations = relations(outfits, ({ one, many }) => ({
-  user: one(users, { fields: [outfits.userId], references: [users.id] }),
-  avatar: one(avatars, { fields: [outfits.avatarId], references: [avatars.id] }),
-  items: many(outfitItems), // 1-outfit : n-outfitItems
-}));
-// outfitItems table relations
-export const outfitItemsRelations = relations(outfitItems, ({ one }) => ({
-  outfit: one(outfits, { fields: [outfitItems.outfitId], references: [outfits.id] }),
-  item: one(items, { fields: [outfitItems.itemId], references: [items.id] }),
-}));
+// recipeAssets table relations
+export const recipeAssetsRelations = relations(recipeAssets, ({ one }) => ({
+  recipe: one(recipes, { fields: [recipeAssets.recipeId], references: [recipes.id] }),
+  asset: one(assets, { fields: [recipeAssets.assetId], references: [assets.id] }),
+})); 
