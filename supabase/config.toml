@@ -1,5 +1,5 @@
-# プロジェクトID（変更しなくてOK）
-project_id = "vrc-closet"
+
+project_id = "avarecipe"
 
 [api]
 enabled = true
@@ -13,9 +13,6 @@ port = 54322
 major_version = 15
 
 # メール送信テストサーバー (Inbucket)
-# Authのメール確認リンクを見るのに便利ですが、
-# "Illegal instruction" が出る場合は false にしてみてください。
-# (通常は軽量なので true でも大丈夫です)
 [inbucket]
 enabled = true 
 port = 54324
@@ -28,18 +25,18 @@ port = 54323
 api_url = "http://127.0.0.1:54321"
 
 
-# ❌ 分析・ログ収集 (クラッシュする場合があるため, 無効化)
+# 分析・ログ収集 (クラッシュしたため, 無効化)
 [analytics]
 enabled = false
 
-# ❌ リアルタイム通信 (Websocket)
+# リアルタイム通信 (Websocket)
 [realtime]
 enabled = false
 
-# ❌ Edge Functions (Honoを使うので不要)
+# Edge Functions (Honoを使うので不要)
 [edge_runtime]
 enabled = false
 
-# ❌ 画像変換・リサイズ機能 (ストレージ自体は使えます)
+# 画像変換・リサイズ機能 
 [storage.image_transformation]
 enabled = false
