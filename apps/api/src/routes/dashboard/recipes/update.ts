@@ -18,7 +18,7 @@ const jsonValidator = zValidator('json', z.object({
   description: z.string().optional(),
   state: z.enum(recipeStateEnum.enumValues).optional(),
   imageUrl: z.string().optional(),
-  baseAssetId: z.uuid().optional(),
+  baseAssetId: z.uuid().nullable(),
   //
   steps: z.array(z.object({
     id: z.uuid().optional(),
@@ -62,8 +62,8 @@ const update = new Hono<AppEnv>()
 
         // get existing steps and assets
         const recipeId = result[0].id;
-        const steps: RecipeRes['steps'] = []; // new steps
-        const assets: RecipeRes['assets'] = []; // new assets
+        const rSteps: RecipeRes['steps'] = []; // new steps
+        const rAssets: RecipeRes['assets'] = []; // new assets
         if (body.steps) {
           const mods: {
             create: NewRecipeStep[];
@@ -84,7 +84,7 @@ const update = new Hono<AppEnv>()
           // apply changes
           if (mods.create.length > 0) {
             const created = await db.insert(recipeSteps).values(mods.create).returning();
-            steps.push(...created);
+            rSteps.push(...created);
           }
           if (mods.delete.length > 0) {
             const deleted = await db.delete(recipeSteps).where(inArray(recipeSteps.id, mods.delete)).returning();
@@ -93,7 +93,7 @@ const update = new Hono<AppEnv>()
             const updated = await Promise.all(mods.update.map(async (step) => 
               (await db.update(recipeSteps).set(step).where(eq(recipeSteps.id, step.id!)).returning())[0]
             ));
-            steps.push(...updated);
+            rSteps.push(...updated);
           }
         }
         if (body.assets) {
@@ -116,7 +116,7 @@ const update = new Hono<AppEnv>()
           // apply changes
           if (mods.create.length > 0) {
             const created = await db.insert(recipeAssets).values(mods.create).returning();
-            assets.push(...created);
+            rAssets.push(...created.map(c => ({...c, asset: null})));
           }
           if (mods.delete.length > 0) {
             const deleted = await db.delete(recipeAssets).where(inArray(recipeAssets.id, mods.delete)).returning();
@@ -125,10 +125,15 @@ const update = new Hono<AppEnv>()
             const updated = await Promise.all(mods.update.map(async (asset) => 
               (await db.update(recipeAssets).set(asset).where(eq(recipeAssets.id, asset.id!)).returning())[0]
             ));
-            assets.push(...updated);
+            rAssets.push(...updated.map(u => ({...u, asset: null})));
           }
         }
-        return c.json<RecipeRes>({ ...result[0], steps, assets }, 200);
+        return c.json<RecipeRes>({
+          ...result[0], 
+          baseAsset: null,
+          steps: rSteps, 
+          assets: rAssets
+        }, 200);
       } catch (e) {
         console.error(e);
         return c.json({ error: 'Failed to update' }, 500);

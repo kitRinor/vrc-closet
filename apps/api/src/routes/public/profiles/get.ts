@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { and, eq } from 'drizzle-orm';
 import { profiles } from '@/db/schema/profiles';
-import { PublicProfileRes } from '.';
+import { PubProfileRes } from '.';
 
 
 const paramValidator = zValidator('param', z.object({
@@ -28,7 +28,7 @@ const get = new Hono<AppEnv>()
         return c.json({ error: 'not found' }, 404);
       }
 
-      return c.json<PublicProfileRes>(profile[0], 200);
+      return c.json<PubProfileRes>(profile[0], 200);
     } catch (e) {
       console.error(e);
       return c.json({ error: 'Failed to fetch' }, 500);

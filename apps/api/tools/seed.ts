@@ -88,7 +88,9 @@ async function main() {
         recipe: {
           name: 'ベースシフォン',
           description: 'シフォンの改変ベース用にカスタム手順',
+          baseAssetId: insertedAssets[0].id,
           imageUrl: 'https://placehold.co/600x400?text=Base+Chiffon',
+          state: 'private',
         },
         steps: [
           { stepNumber: 1, name: 'インポート', description: 'BoothからシフォンをダウンロードしてUnityにインポートする。', imageUrl: 'https://placehold.co/600x400?text=Step+1' },
@@ -106,7 +108,9 @@ async function main() {
         recipe: {
           name: 'ルルネカスタム',
           description: 'ルルネのカスタム手順',
+          baseAssetId: insertedAssets[1].id,
           imageUrl: 'https://placehold.co/600x400?text=Rurune+Custom',
+          state: 'private',
         },
         steps: [
           { stepNumber: 1, name: 'インポート', description: 'BoothからルルネをダウンロードしてUnityにインポートする。', imageUrl: 'https://placehold.co/600x400?text=Step+1' },
@@ -122,6 +126,27 @@ async function main() {
           { assetId: insertedAssets[11].id, note: 'アクセサリとして使用' },
         ],
       },
+      {
+        recipe: {
+          name: '公開マヌカカスタム',
+          description: 'マヌカのカスタム手順',
+          baseAssetId: insertedAssets[2].id,
+          imageUrl: 'https://placehold.co/600x400?text=Manuka+Custom',
+          state: 'public',
+        },
+        steps: [
+          { stepNumber: 1, name: 'インポート', description: 'BoothからマヌカをダウンロードしてUnityにインポートする。', imageUrl: 'https://placehold.co/600x400?text=Step+1' },
+          { stepNumber: 2, name: 'シェイプキー調整', description: 'シェイプキーを利用して表情，体形を調整.\n\n 設定値は，\nbody:\n\teye_lid_x:100\n\teye_pupil_heart:100\n\teye_hl_B_none:100\nbody_base:\n\tbreast_small:75\n', imageUrl: 'https://placehold.co/600x400?text=Step+2' },
+          { stepNumber: 3, name: 'prefab化&エクスポート(option)', description: '複数使いまわすならPrefab化, unitypackageにexportをしておくと楽', imageUrl: 'https://placehold.co/600x400?text=Step+3' },
+          { stepNumber: 4, name: 'VRChatアップロード', description: 'VRChat SDKを使ってアップロードする。', imageUrl: 'https://placehold.co/600x400?text=Step+4' },
+        ],
+        assets: [
+          { assetId: insertedAssets[2].id, note: 'ベースアバターとして使用' },
+          { assetId: insertedAssets[9].id, note: '髪型として使用' },
+          { assetId: insertedAssets[10].id, note: 'アクセサリとして使用' },
+          { assetId: insertedAssets[11].id, note: 'アクセサリとして使用' },
+        ],
+      }
     ]
     for (const recipeData of recipesToInsert) {
       const insertedRecipes = await db.insert(schema.recipes).values({

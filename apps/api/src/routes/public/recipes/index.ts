@@ -3,15 +3,12 @@ import { AppEnv } from '@/type';
 
 import list from './list';
 import get from './get';
-import create from './create';
-import update from './update';
-import del from './delete';
 import { requireAuth } from '@/middleware/auth';
 import { recipeStateEnum } from '@/db/schema/recipes';
 
 // Define the response interface for type safety
 type RecipeState = 'private' | 'public' | 'unlisted';
-export interface RecipeRes {
+export interface PubRecipeRes {
   id: string;
   userId: string;
   name: string;
@@ -22,6 +19,12 @@ export interface RecipeRes {
   createdAt: Date | null;
   updatedAt: Date | null;
   // add other fields here
+  user: {
+    id: string;
+    handle: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+  } | null;
   baseAsset: {
     name: string;
     storeUrl: string | null;
@@ -50,11 +53,7 @@ export interface RecipeRes {
 }
 
 const app = new Hono<AppEnv>()
-  .use(requireAuth)
   .route('/', list)
-  .route('/', create)
   .route('/', get)
-  .route('/', update)
-  .route('/', del);
 
 export default app;

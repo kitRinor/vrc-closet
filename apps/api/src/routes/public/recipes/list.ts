@@ -5,9 +5,11 @@ import { baseQueryForGetList } from '@/lib/validator';
 import { generateCondition } from '@/lib/queryUtils/filter';
 import { generateSorting } from '@/lib/queryUtils/sort';
 import { db } from '@/db';
-import { RecipeRes } from '.';
+import { PubRecipeRes } from '.';
 import { recipeAssets, recipes, recipeSteps } from '@/db/schema/recipes';
-import { asc, inArray } from 'drizzle-orm';
+import { and, asc, eq, inArray } from 'drizzle-orm';
+import { profiles } from '@/db/schema/profiles';
+import { assets } from '@/db/schema/assets';
 
 const list = new Hono<AppEnv>()
   .get(
@@ -22,16 +24,27 @@ const list = new Hono<AppEnv>()
         const { limit, offset, sort, order, filter } = c.req.valid('query');
         
         const result = await db.select().from(recipes)
-          .where(generateCondition(recipes, filter, userId))
+          .where(and(
+            generateCondition(recipes, filter, userId),
+            eq(recipes.state, 'public')
+          ))
+          .innerJoin(profiles, eq(recipes.userId, profiles.userId))
+          .leftJoin(assets, eq(recipes.baseAssetId, assets.id))
           .orderBy(generateSorting(recipes, order, sort))
           .limit(limit)
           .offset(offset);
 
 
         // return without steps and assets for list view
-        return c.json<RecipeRes[]>(result.map(r => ({
+        return c.json<PubRecipeRes[]>(result.map(({ recipes: r, profiles: p, assets: ba }) => ({
           ...r,
-          baseAsset: null,
+          user: {
+            id: p.userId,
+            handle: p.handle,
+            displayName: p.displayName,
+            avatarUrl: p.avatarUrl,
+          },
+          baseAsset: ba,
           steps: [],
           assets: [],
         })), 200);

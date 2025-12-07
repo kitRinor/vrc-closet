@@ -6,11 +6,16 @@ import { useAuth } from "@/contexts/AuthContext";
 // UI Components
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserIcon, EllipsisIcon, ShirtIcon, Grid3X3Icon, PlusIcon } from "lucide-react";
+import { UserIcon, EllipsisIcon, ShirtIcon, Grid3X3Icon, PlusIcon, ImageIcon, Box } from "lucide-react";
 import { PageLayout } from "@/components/common/PageLayout";
 import { useTranslation } from "react-i18next";
 import type { Asset, Recipe } from "@/lib/api";
 import { AssetAddDialog } from "@/components/features/asset/AssetAddDialog";
+import { RecipeAddDialog } from "@/components/features/recipe/RecipeAddDialog";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { RecipeCardView } from "@/components/features/recipe/RecipeCardView";
+import { AssetCardView } from "@/components/features/asset/AssetCardView";
 
 const MAX_VISIBLE = 10;
 
@@ -21,8 +26,6 @@ export default function HomePage() {
   
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
-  const [openNewAvatar, setOpenNewAvatar] = useState(false);
-  const [openNewItem, setOpenNewItem] = useState(false);
 
   useEffect(() => {
     if (auth.user) {
@@ -56,16 +59,21 @@ export default function HomePage() {
   return (
     <PageLayout>
       <div className="gap-8 flex flex-col">
+
+        {/* publicレシピ一覧 */}
+
         {/* --- 所持アバター --- */}
         <section>
           <MyAssetList
             t_mode="recipe"
             data={recipes}
-            isDialogOpen={openNewAvatar}
-            setIsDialogOpen={setOpenNewAvatar}
             onClickTitle={() => navigate("recipes")}
-            onClickItem={(item) => navigate(`recipes/${item.id}`)}
-            onSuccess={fetchAssets}
+            renderItem={(item) => (
+              <RecipeCardView key={item.id} item={item} onClick={() => navigate(`recipes/${item.id}`)} />
+            )}
+            renderDialog={(open, setOpen) => (
+              <RecipeAddDialog open={open} setOpen={setOpen} onSuccess={fetchRecipes} />
+            )}
           />
         </section>
         {/* --- 所持アイテム --- */}
@@ -73,11 +81,13 @@ export default function HomePage() {
           <MyAssetList
             t_mode="asset"
             data={assets}
-            isDialogOpen={openNewItem}
-            setIsDialogOpen={setOpenNewItem}
             onClickTitle={() => navigate("assets")}
-            onClickItem={(item) => navigate(`assets/${item.id}`)}
-            onSuccess={fetchRecipes}
+            renderItem={(item) => (
+              <AssetCardView key={item.id} item={item} onClick={() => navigate(`assets/${item.id}`)} />
+            )}
+            renderDialog={(open, setOpen) => (
+              <AssetAddDialog open={open} setOpen={setOpen} onSuccess={fetchRecipes} />
+            )}
           />
         </section>
       </div>
@@ -88,15 +98,14 @@ export default function HomePage() {
 const MyAssetList = <T extends Asset | Recipe>(props:{
   t_mode?: 'asset' | 'recipe'; 
   data: T[];
-  isDialogOpen: boolean;
   maxVisible?: number
-  setIsDialogOpen: (open: boolean) => void;
-  onClickTitle: () => void;
-  onClickItem: (item: T) => void;
-  onSuccess?: () => void;
+  onClickTitle?: () => void;
+  renderItem: (item: T) => React.ReactNode;
+  renderDialog?: (open: boolean, setOpen: (open: boolean) => void) => React.ReactNode;
 }) => {
 
   const { t } = useTranslation();
+  const [openDialog, setOpenDialog] = useState(false);
 
   const maxVisible = props.maxVisible ?? 10;
 
@@ -111,9 +120,6 @@ const MyAssetList = <T extends Asset | Recipe>(props:{
     storeUrlField: props.t_mode === 'asset' ? t("core.data.asset.store_url") : t("core.data.recipe.store_url"),
     thumbnailUrlField: props.t_mode === 'asset' ? t("core.data.asset.image_url") : t("core.data.recipe.image_url"),
   }
-  const DialogComponent = useMemo(() => 
-    props.t_mode === 'recipe' ? (..._: any[]) => null : AssetAddDialog,
-  [props.t_mode]);
 
   return (
     <Card className="hover:bg-vrclo1-50  transition-colors h-full border-2 border-transparent hover:border-vrclo1-200 ">
@@ -122,37 +128,16 @@ const MyAssetList = <T extends Asset | Recipe>(props:{
           <Icon className="h-5 w-5" /> 
           {trans.title}
         </CardTitle>
-
-        <Button onClick={() => props.setIsDialogOpen(true)}><PlusIcon className="h-4 w-4 mr-2" /> {t('core.action.add')}</Button>
-        <DialogComponent
-          open={props.isDialogOpen} 
-          setOpen={props.setIsDialogOpen} 
-          onSuccess={props.onSuccess} 
-        />
+        {props.renderDialog && (<>
+          <Button onClick={() => setOpenDialog(true)}><PlusIcon className="h-4 w-4 mr-2" /> {t('core.action.add')}</Button>
+          {props.renderDialog(openDialog, setOpenDialog)}
+        </>)}
 
       </CardHeader>             
 
       {/* 横スクロール可能に */}
       <div className="flex gap-4 p-4 overflow-x-auto">
-        {props.data.slice(0, maxVisible).map((item) => (
-          <Card 
-            key={item.id} onClick={() => props.onClickItem(item)} 
-            className="min-w-[33%] w-[33%] md:min-w-[25%] md:w-[25%] lg:min-w-[20%] lg:w-[20%] hover:bg-vrclo1-50  transition-colors h-full border-2 border-transparent hover:border-vrclo1-200  overflow-hidden cursor-pointer"
-          >
-            <div className="aspect-square bg-vrclo1-100  flex items-center justify-center text-vrclo1-300">
-              {item.imageUrl ? (
-                <img src={item.imageUrl} alt={item.name} className="object-cover w-full h-full" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <UserIcon className="h-12 w-12" />
-                </div>
-              )}
-            </div>
-            <CardFooter className="p-3 flex flex-col items-start">
-              <span className="font-bold truncate w-full text-vrclo1-700">{item.name}</span>
-            </CardFooter>
-          </Card>
-        ))}
+        {props.data.slice(0, maxVisible).map(props.renderItem)}
         
         {props.data.length === 0 && (
           <div className="col-span-full text-center py-10 text-vrclo1-500 bg-vrclo1-50 rounded-lg border border-dashed">

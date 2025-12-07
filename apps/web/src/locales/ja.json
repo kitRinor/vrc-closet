@@ -36,6 +36,10 @@
       "update_failed": "更新できませんでした",
       "delete_success": "削除しました",
       "delete_failed": "削除できませんでした",
+      "save_success": "保存しました",
+      "save_failed": "保存できませんでした",
+      "upload_success": "アップロードしました",
+      "upload_failed": "アップロードできませんでした",
       "error_occurred": "エラーが発生しました",
       "no_data": "データがありません",
       "loading": "読み込み中..."
@@ -135,7 +139,7 @@
         "page_title": "マイアイテム一覧",
         "page_description": "登録されているアイテムの一覧",
         "add_item": "アイテム追加",
-        "add_item_description": "新しい衣装アイテムを追加します。",
+        "add_item_description": "新しいアイテムを追加します。",
         "item_count": "{{count}} アイテム",
         "no_items": "まだアイテムが登録されていません。まずはアイテムを追加しましょう！"
       },
@@ -158,6 +162,40 @@
         "update_failed": "更新に失敗しました",
         "delete_success": "削除しました",
         "delete_failed": "削除できませんでした"
+      }
+    },
+    
+    "recipes": {
+      "list": {
+        "page_title": "マイレシピ",
+        "page_description": "レシピ一覧",
+        "add_recipe": "レシピを追加",
+        "no_recipes": "まだレシピがありません。新しいレシピを追加しましょう！"
+      },
+      "create": {
+        "page_title": "レシピの新規作成",
+        "page_description": "新しい改変レシピを作成します",
+        "select_base_asset": "ベースアセット (任意)",
+        "recipe_name": "レシピ名",
+        "create_submit": "レシピを作成して編集へ"
+      },
+      "edit": {
+        "page_title": "レシピ編集",
+        "page_description": "レシピの情報を編集します",
+        "basic_info": "基本情報",
+        "ingredients": "使用アイテム (材料)",
+        "steps": "改変手順",
+        "add_step": "手順を追加",
+        "add_ingredient": "アイテムを追加",
+        "step_title": "タイトル",
+        "step_description": "説明",
+        "step_image": "参考画像",
+        "public_settings": "公開設定",
+        "status": {
+          "private": "非公開",
+          "public": "公開",
+          "unlisted": "限定公開"
+        }
       }
     }
   },

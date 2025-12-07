@@ -13,7 +13,7 @@ const jsonValidator = zValidator('json', z.object({
   description: z.string().optional(),
   state: z.enum(recipeStateEnum.enumValues).optional(),
   imageUrl: z.string().optional(),
-  baseAssetId: z.uuid().optional(),
+  baseAssetId: z.uuid().nullable(),
   //
   steps: z.array(z.object({
     stepNumber: z.number().min(0),
@@ -70,8 +70,9 @@ const create = new Hono<AppEnv>()
 
       return c.json<RecipeRes>({
         ...result[0],
+        baseAsset: null,
         steps: steps,
-        assets: assets,
+        assets: assets.map(a => ({...a, asset: null})),
       }, 200);
     } catch (e) {
       console.error(e);
