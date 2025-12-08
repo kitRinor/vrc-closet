@@ -17,21 +17,122 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   ArrowLeft, Save, Loader2, Plus, Trash2, GripVertical, 
-  Image as ImageIcon, Box, X, User as UserIcon, 
-  ArrowUp, ArrowDown, Settings2, ShoppingBag 
+  Image as ImageIcon, Box, X, ShoppingBag, Settings2, 
+  UserIcon,
+  ArrowDown,
+  ArrowUp
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 
 // Type
 import type { InferResponseType } from "hono/client";
-import { cn } from "@/lib/utils";
 
 // API Responses
 type RecipeDetail = InferResponseType<typeof dashboardApi.recipes[':id']['$get'], 200>;
 type AssetDetail = InferResponseType<typeof dashboardApi.assets[':id']['$get'], 200>;
+
+// Key-Value pair editor for asset configuration
+function ConfigEditor({ 
+  config, 
+  onChange 
+}: { 
+  config: Record<string, any> | null, 
+  onChange: (newConfig: Record<string, any>) => void 
+}) {
+  const { t } = useTranslation();
+  
+  // Convert object to array for rendering
+  const entries = Object.entries(config || {});
+
+  const handleUpdateKey = (oldKey: string, newKey: string, value: any) => {
+    if (!newKey) return;
+    const newConfig = { ...config };
+    if (oldKey !== newKey) {
+      delete newConfig[oldKey];
+    }
+    newConfig[newKey] = value;
+    onChange(newConfig);
+  };
+
+  const handleUpdateValue = (key: string, valueStr: string) => {
+    const newConfig = { ...config };
+    // Try to parse value (number, boolean, json), otherwise keep as string
+    let value = valueStr;
+    try {
+      // Don't parse empty string as JSON (it throws)
+      if (valueStr.trim() !== "") {
+        const parsed = JSON.parse(valueStr);
+        // Only accept primitives or objects/arrays, avoid null unless intended
+        value = parsed;
+      }
+    } catch {
+      // Keep as string if not valid JSON
+    }
+    newConfig[key] = value;
+    onChange(newConfig);
+  };
+
+  const handleAdd = () => {
+    const newConfig = { ...config, "": "" }; // Add empty key-value
+    onChange(newConfig);
+  };
+
+  const handleRemove = (key: string) => {
+    const newConfig = { ...config };
+    delete newConfig[key];
+    onChange(newConfig);
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <Label className="text-xs text-muted-foreground flex items-center gap-1">
+          <Settings2 className="h-3 w-3" /> Configuration
+        </Label>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="h-5 px-2 text-[10px]" 
+          onClick={handleAdd}
+          type="button"
+        >
+          <Plus className="h-3 w-3 mr-1" />
+        </Button>
+      </div>
+
+      <div className="space-y-2">
+        {entries.map(([key, value], idx) => (
+          <div key={idx} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
+            <Input
+              value={key}
+              onChange={(e) => handleUpdateKey(key, e.target.value, value)}
+              className="h-7 text-xs bg-background/50 px-2"
+              placeholder={t('dashboard.recipes.edit.asset_config_key_placeholder')}
+            />
+            <Input
+              // Convert value back to string for input
+              value={typeof value === 'object' ? JSON.stringify(value) : String(value)}
+              onChange={(e) => handleUpdateValue(key, e.target.value)}
+              className="h-7 text-xs font-mono bg-background/50 px-2 text-muted-foreground focus:text-foreground"
+              placeholder={t('dashboard.recipes.edit.asset_config_value_placeholder')}
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-muted-foreground hover:text-destructive"
+              onClick={() => handleRemove(key)}
+              type="button"
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function EditRecipePage() {
   const { id } = useParams<{ id: string }>();
@@ -236,16 +337,12 @@ export default function EditRecipePage() {
     setRecipe({ ...recipe, assets: newAssets });
   };
 
-  const updateAssetConfig = (index: number, value: string) => {
+  // 👇 Updated to use ConfigEditor
+  const updateAssetConfigObj = (index: number, newConfig: Record<string, any>) => {
     if (!recipe) return;
     const newAssets = [...recipe.assets];
-    try {
-      const config = JSON.parse(value);
-      newAssets[index].configuration = config;
-      setRecipe({ ...recipe, assets: newAssets });
-    } catch (e) {
-      // ignore parse error or handle validation
-    }
+    newAssets[index].configuration = newConfig;
+    setRecipe({ ...recipe, assets: newAssets });
   };
 
   if (loading) return <PageLayout><div className="p-10 text-center">{t('core.action.loading')}</div></PageLayout>;
@@ -318,6 +415,7 @@ export default function EditRecipePage() {
               </div>
 
               <div className="space-y-2">
+                <Label>{t('dashboard.recipes.create.recipe_name')}</Label>
                 <Input 
                   value={recipe.name} 
                   onChange={e => updateField('name', e.target.value)} 
@@ -391,23 +489,24 @@ export default function EditRecipePage() {
                         <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
-                    
-                    {/* Compact Config Editor */}
-                    <div className="space-y-2 opacity-80 group-hover:opacity-100 transition-opacity">
-                       <Input 
-                         value={asset.note || ""} 
-                         onChange={(e) => updateAssetField(index, 'note', e.target.value)}
-                         className="h-6 text-[11px] bg-muted/20 border-transparent hover:border-border focus:border-primary px-2" 
-                         placeholder="メモ (例: ボーン設定注意)"
-                       />
-                       <div className="relative">
-                          <Settings2 className="absolute left-2 top-1.5 h-3 w-3 text-muted-foreground" />
-                          <Input 
-                            defaultValue={JSON.stringify(asset.configuration)}
-                            onBlur={(e) => updateAssetConfig(index, e.target.value)}
-                            className="h-6 text-[10px] font-mono bg-muted/20 border-transparent hover:border-border focus:border-primary pl-6 pr-2 text-muted-foreground focus:text-foreground" 
-                            placeholder='JSON Config'
-                          />
+
+                    <div className="space-y-3">
+                       {/* Note Input */}
+                       <div className="space-y-1">
+                         <Input 
+                           value={asset.note || ""} 
+                           onChange={(e) => updateAssetField(index, 'note', e.target.value)}
+                           className="h-7 text-xs bg-muted/30 border-transparent hover:border-border focus:border-primary px-2" 
+                           placeholder={t('dashboard.recipes.edit.asset_note_placeholder')}
+                         />
+                       </div>
+
+                       {/* Config Editor (Key-Value) */}
+                       <div className="bg-muted/20 rounded-md p-2 border border-border/50">
+                         <ConfigEditor 
+                           config={asset.configuration}
+                           onChange={(newConfig) => updateAssetConfigObj(index, newConfig)}
+                         />
                        </div>
                     </div>
                  </div>
@@ -499,24 +598,24 @@ export default function EditRecipePage() {
                     {/* Step Image */}
                     <div className="flex items-start gap-4 p-3 bg-muted/20 rounded-md border border-dashed border-border/40 hover:border-border transition-colors">
                         {step.imageUrl ? (
-                           <div className="relative h-24 w-auto rounded-md overflow-hidden border border-border group/img bg-background">
+                           <div className="relative h-32 w-auto rounded-md overflow-hidden border border-border group/img bg-background">
                                <img src={step.imageUrl} className="h-full object-contain" />
                                <Button 
                                  size="icon" variant="destructive" 
-                                 className="absolute top-1 right-1 h-5 w-5 opacity-0 group-hover/img:opacity-100 transition-opacity"
+                                 className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover/img:opacity-100 transition-opacity"
                                  onClick={() => updateStep(index, 'imageUrl', null)}
                                >
                                  <X className="h-3 w-3" />
                                </Button>
                            </div>
                         ) : (
-                          <div className="flex items-center justify-center h-24 w-24 bg-muted/50 rounded-md text-muted-foreground/40 text-xs text-center p-1 border border-transparent">
-                             <ImageIcon className="h-6 w-6" />
+                          <div className="flex items-center justify-center h-24 w-24 bg-muted rounded-md text-muted-foreground/50 text-xs text-center p-1 border border-transparent">
+                             <ImageIcon className="h-8 w-8" />
                           </div>
                         )}
                         <div className="flex-1 flex flex-col justify-center">
-                           <Label className="text-xs text-muted-foreground mb-1">参考画像</Label>
-                           <div className="max-w-[200px]">
+                           <Label className="text-xs text-muted-foreground mb-2">参考画像</Label>
+                           <div className="max-w-xs">
                              <ImageUploader 
                                 category="other"
                                 defaultUrl={undefined}
@@ -529,6 +628,7 @@ export default function EditRecipePage() {
                 </Card>
               </div>
             ))}
+            {/* 👇 Scroll target */}
             <div ref={stepsEndRef} />
           </div>
         </div>

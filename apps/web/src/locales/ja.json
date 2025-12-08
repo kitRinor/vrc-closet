@@ -191,6 +191,9 @@
         "step_title": "タイトル",
         "step_description": "説明",
         "step_image": "参考画像",
+        "asset_note_placeholder": "メモ (e.g., ボーン調整必須)",
+        "asset_config_key_placeholder": "Key (e.g., scale)",
+        "asset_config_value_placeholder": "Value",
         "public_settings": "公開設定",
         "status": {
           "private": "非公開",

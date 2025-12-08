@@ -183,7 +183,11 @@ export default function RecipeDetailPage() {
                       {asset.configuration && Object.keys(asset.configuration).length > 0 && (
                         <div className="bg-muted/50 rounded p-2 font-mono flex items-start justify-between group">
                           <pre className="overflow-x-auto whitespace-pre-wrap break-all max-h-[100px]">
-                            {JSON.stringify(asset.configuration, null, 2)}
+                            {Object.entries(asset.configuration).map(([key, value]) => (
+                              <div key={key}>
+                                <strong>{key}:</strong> {String(value)}
+                              </div>
+                            ))}
                           </pre>
                           <button 
                             onClick={() => handleCopyConfig(asset.configuration)}
